@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JewelryNest Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc; /* light beige background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #eae3d2; /* slightly darker beige */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 400px; /* fixed width for better alignment */
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left; /* align labels to the left */
+        }
+        label {
+            font-size: 14px;
+            color: #333; /* darker text for labels */
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #000; /* black button */
+            color: #fff; /* white text */
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px; /* larger button text */
+            width: 100%; /* full width for button */
+        }
+        button:hover {
+            background-color: #57574f; /* dark grey on hover */
+        }
+        .logo {
+            font-size: 20px; /* adjusted font size */
+            font-weight: bold;
+            margin-top: 20px;
+            color: #000;
+        }
+        .brand-logo {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #img {
+            position:fixed; /* positioning the logo */
+            bottom: 250px;
+            right: 55px;
+            background-color:#f5f5dc;
+            border: 5px solid hsl(49, 52%, 69%);
+            border-radius: 300%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome!</h1>
+        <p>Log in to your account.</p>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required>
+        </div>
+        <button type="submit">Login</button>
+        <div class="logo">JewelryNest</div>
+        <div class="logo">PJ PALACE JEWELERS</div>
+    </div>
+    <img src="x.png" width="300" id="img" alt="Logo Image">
+</body>
+</html>
