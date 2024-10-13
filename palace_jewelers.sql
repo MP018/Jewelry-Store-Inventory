@@ -1,6 +1,11 @@
 use palace_jewelers;
 show tables;
 
+<<<<<<< Updated upstream
+=======
+describe item;
+
+>>>>>>> Stashed changes
 create table Item (
 SKU varchar(500) not null primary key,
 pictures varchar(500) not null,
@@ -67,4 +72,10 @@ Total decimal(7,2) not null,
 constraint fk_customerid foreign key (Customer_ID) references Customer (customer_id),
 constraint fk_employeeid foreign key (employee_id) references Employee (employee_id),
 constraint fk_order_number foreign key (Order_Number) references order_item (order_number)
+<<<<<<< Updated upstream
 );
+=======
+);
+
+describe customer;
+>>>>>>> Stashed changes
