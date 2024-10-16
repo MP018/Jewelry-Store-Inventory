@@ -13,6 +13,7 @@ app.config['MYSQL_HOST'] = 'palacejewelers-palacejewelers.j.aivencloud.com'
 app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'defaultdb'
+app.config['MYSQL_PORT'] = 16246
 
 # Intialize MySQL
 mysql = MySQL(app)
@@ -64,21 +65,20 @@ def logout():
 # http://localhost:5000/Falsk/register - this will be the registration page, we need to use both GET and POST requests
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Output message if something goes wrong...
     msg = ''
-    # Check if "username", "password" and "email" POST requests exist (user submitted form)
     if request.method == 'POST' and 'name' in request.form and 'password' in request.form and 'email' in request.form:
-        # Create variables for easy access
         name = request.form['name']
         firstName, lastName = name.split(" ", 1)
         password = request.form['password']
         email = request.form['email']
 
-        # Check if account exists using MySQL
+        # Debugging output
+        print(f"Name: {name}, First Name: {firstName}, Last Name: {lastName}, Email: {email}, Password: {password}")
+
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM Customer WHERE email = %s', (email,))
         account = cursor.fetchone()
-        # If account exists show error and validation checks
+
         if account:
             msg = 'Account already exists!'
         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
@@ -88,16 +88,21 @@ def register():
         elif not name or not password or not email:
             msg = 'Please fill out the form!'
         else:
-            # Account doesn't exist and the form data is valid, now insert new account into accounts table
-            cursor.execute('INSERT INTO Customer (First_Name, Last_Name, password, email) VALUES (%s, %s, %s, %s)', (firstName, lastName, password, email,))
-            mysql.connection.commit()
-            msg = 'You have successfully registered!'
-
+            try:
+                # Attempt to insert into the database
+                cursor.execute('INSERT INTO Customer (First_Name, Last_Name, password, email) VALUES (%s, %s, %s, %s)', (firstName, lastName, password, email,))
+                mysql.connection.commit()
+                msg = 'You have successfully registered!'
+                print("Registration successful!")
+            except MySQLdb.Error as err:
+                print(f"Database error: {err}")
+                msg = 'There was an issue with registration. Please try again.'
+    
     elif request.method == 'POST':
-        # Form is empty... (no POST data)
         msg = 'Please fill out the form!'
-    # Show the registration form with a message (if any)
+
     return render_template('registration.html', msg=msg)
+
 
 if __name__ == '__main__':
     app.run()
