@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 {
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            display: block;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn{
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #eae3d2;
+        }
+        td {
+            background-color: #fff;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .buttons button {
+            background-color: #000;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        .buttons button:hover {
+            background-color: #57574f;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #add-user-form {
+            display: none;
+            margin-top: 20px;
+            background-color: #eae3d2;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>JewelryNest Dashboard</h1>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+    </div>
+
+    <div class="sidebar">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
+    </div>
+
+    <div class="content">
+        <h1>Customer Profile</h1>
+
+    <!-- Table to display user details -->
+    <table id="user-table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Sample data (can be dynamically generated with JS later) -->
+            <tr>
+                <td>John</td>
+                <td>Doe</td>
+                <td>johndoe@example.com</td>
+                <td>123-456-7890</td>
+                <td><button onclick="removeUser(this)">Remove</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Buttons to add user -->
+    <div class="buttons">
+        <button onclick="showAddUserForm()">Add User</button>
+    </div>
+
+    <!-- Hidden form to add new user details -->
+    <div id="add-user-form">
+        <h3>Add New User</h3>
+        <form id="user-form">
+            <div class="input-group">
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" required>
+            </div>
+            <div class="input-group">
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="input-group">
+                <label for="phone-number">Phone Number:</label>
+                <input type="text" id="phone-number" required>
+            </div>
+            <button type="button" onclick="addUser()">Add User</button>
+            <button type="button" onclick="hideAddUserForm()">Cancel</button>
+        </form>
+    </div>
+
+    <script>
+        // Show the form to add a new user
+        function showAddUserForm() {
+            document.getElementById("add-user-form").style.display = "block";
+        }
+
+        // Hide the add user form
+        function hideAddUserForm() {
+            document.getElementById("add-user-form").style.display = "none";
+        }
+
+        // Add a new user to the table
+        function addUser() {
+            var firstName = document.getElementById("first-name").value;
+            var lastName = document.getElementById("last-name").value;
+            var email = document.getElementById("email").value;
+            var phoneNumber = document.getElementById("phone-number").value;
+
+            if (firstName && lastName && email && phoneNumber) {
+                var table = document.getElementById("user-table").getElementsByTagName("tbody")[0];
+                var newRow = table.insertRow();
+
+                var cell1 = newRow.insertCell(0);
+                var cell2 = newRow.insertCell(1);
+                var cell3 = newRow.insertCell(2);
+                var cell4 = newRow.insertCell(3);
+                var cell5 = newRow.insertCell(4);
+
+                cell1.innerHTML = firstName;
+                cell2.innerHTML = lastName;
+                cell3.innerHTML = email;
+                cell4.innerHTML = phoneNumber;
+                cell5.innerHTML = '<button onclick="removeUser(this)">Remove</button>';
+
+                hideAddUserForm();
+                document.getElementById("user-form").reset();
+            } else {
+                alert("Please fill in all fields.");
+            }
+        }
+
+        // Remove a user from the table
+        function removeUser(btn) {
+            var row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+    </script>
+
+    </div>
+
+
+    
+</body>
+</html>
