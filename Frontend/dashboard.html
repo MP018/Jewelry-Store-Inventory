@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JewelryNest Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 {
+    font-size: 24px;
+    margin: 0;
+    position: relative; /* Add position here */
+    animation: moveText 8s linear infinite;
+    white-space: nowrap; /* Ensure the text stays on one line */
+}
+
+@keyframes moveText {
+    0% {
+        left: -100%; /* Start off-screen to the right */
+    }
+    100% {
+        left: 100%; /* End off-screen to the left */
+    }
+}
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            display: block;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn{
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .profile-btn:hover{
+            background-color: #57574f;
+        }
+        
+        
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>JewelryNest Dashboard</h1>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+    </div>
+
+    <div class="sidebar">
+        <a href="#dashboard">Dashboard</a>
+        <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
+    </div>
+
+    <div class="content">
+        <h2>Welcome to your Dashboard!</h2>
+        <p>This is where you can view your account information, profile, and more.</p>
+        
+        <!-- Section for Customer Profile -->
+        <h3 id="customer-profile">Customer Profile</h3>
+        <p>View and edit customer information here.</p>
+
+        <!-- Sample profile data (you can replace it with dynamic data later) -->
+        <div>
+            <pre> hello Admin</pre>
+            
+        </div>
+    </div>
+
+</body>
+</html>
