@@ -53,15 +53,39 @@ def dashboard():
     # If not logged in, redirect to login page
     return redirect(url_for('login'))
 
-@app.route('/customer_profile')
+@app.route('/customer_profile', methods=['GET', 'POST'])
 def customer_profile():
     # Ensure user is logged in before showing the customer profile
-    if 'loggedin' in session:
-        return render_template('customer_profile.html', 
-                               first_name=session['First_Name'], 
-                               last_name=session['Last_Name'])
-    # If not logged in, redirect to login page
-    return redirect(url_for('login'))
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    if request.method == 'POST':
+        action = request.form['action']
+        
+        if action == 'add':
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            email = request.form['Customer_Email']
+            phone_number = request.form['Customer_Phone']
+            
+            cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name, Customer_Email, Customer_Phone) VALUES (%s, %s, %s, %s)', 
+                           (first_name, last_name, email, phone_number))
+            mysql.connection.commit()
+        
+        elif action == 'remove':
+            customer_id = request.form['customer_id']
+            cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
+            mysql.connection.commit()
+
+    cursor.execute('SELECT * FROM CUSTOMER')
+    customers = cursor.fetchall()
+
+    return render_template('customer_profile.html', 
+                           first_name=session['First_Name'], 
+                           last_name=session['Last_Name'],
+                           customers=customers)
 
 @app.route('/logout')
 def logout():
@@ -111,8 +135,6 @@ def register():
                     print(f"Database error: {err}")
                     msg = 'There was an issue with registration. Please try again.'
     return render_template('registration.html', msg=msg)
-
-
 
 if __name__ == '__main__':
     app.run()
