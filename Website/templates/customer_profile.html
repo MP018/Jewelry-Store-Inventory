@@ -124,13 +124,23 @@
             border-radius: 5px;
         }
         #add-user-form {
-            display: none;
             margin-top: 20px;
             background-color: #eae3d2;
             padding: 20px;
             border-radius: 10px;
+            display: none; /* Initially hidden */
         }
     </style>
+    <script>
+        function toggleAddUserForm() {
+            var form = document.getElementById('add-user-form');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="navbar">
@@ -149,6 +159,33 @@
     <div class="content">
         <h1>Customer Profile</h1>
 
+        <!-- Button to toggle the visibility of the add customer form -->
+        <button onclick="toggleAddUserForm()">Add Customer</button>
+
+        <!-- Form to add a new customer -->
+        <div id="add-user-form">
+            <h3>Add New Customer</h3>
+            <form method="POST" action="{{ url_for('customer_profile') }}">
+                <div class="input-group">
+                    <label for="first-name">First Name:</label>
+                    <input type="text" id="first-name" name="first_name" required>
+                </div>
+                <div class="input-group">
+                    <label for="last-name">Last Name:</label>
+                    <input type="text" id="last-name" name="last_name" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="Customer_Email" required>
+                </div>
+                <div class="input-group">
+                    <label for="phone-number">Phone Number:</label>
+                    <input type="text" id="phone-number" name="Customer_Phone" required>
+                </div>
+                <button type="submit" name="action" value="add">Add Customer</button>
+            </form>
+        </div>
+
         <!-- Table to display user details -->
         <table id="user-table">
             <thead>
@@ -161,94 +198,22 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Sample data (can be dynamically generated with JS later) -->
+                {% for customer in customers %}
                 <tr>
-                    <td>John</td>
-                    <td>Doe</td>
-                    <td>johndoe@example.com</td>
-                    <td>123-456-7890</td>
-                    <td><button onclick="removeUser(this)">Remove</button></td>
+                    <td>{{ customer.First_Name }}</td>
+                    <td>{{ customer.Last_Name }}</td>
+                    <td>{{ customer.Customer_Email }}</td>
+                    <td>{{ customer.Customer_Phone }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('customer_profile') }}">
+                            <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
+                            <button type="submit" name="action" value="remove">Remove</button>
+                        </form>
+                    </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
-
-        <!-- Buttons to add user -->
-        <div class="buttons">
-            <button onclick="showAddUserForm()">Add User</button>
-        </div>
-
-        <!-- Hidden form to add new user details -->
-        <div id="add-user-form">
-            <h3>Add New User</h3>
-            <form id="user-form">
-                <div class="input-group">
-                    <label for="first-name">First Name:</label>
-                    <input type="text" id="first-name" required>
-                </div>
-                <div class="input-group">
-                    <label for="last-name">Last Name:</label>
-                    <input type="text" id="last-name" required>
-                </div>
-                <div class="input-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="input-group">
-                    <label for="phone-number">Phone Number:</label>
-                    <input type="text" id="phone-number" required>
-                </div>
-                <button type="button" onclick="addUser()">Add User</button>
-                <button type="button" onclick="hideAddUserForm()">Cancel</button>
-            </form>
-        </div>
-
-        <script>
-            // Show the form to add a new user
-            function showAddUserForm() {
-                document.getElementById("add-user-form").style.display = "block";
-            }
-
-            // Hide the add user form
-            function hideAddUserForm() {
-                document.getElementById("add-user-form").style.display = "none";
-            }
-
-            // Add a new user to the table
-            function addUser() {
-                var firstName = document.getElementById("first-name").value;
-                var lastName = document.getElementById("last-name").value;
-                var email = document.getElementById("email").value;
-                var phoneNumber = document.getElementById("phone-number").value;
-
-                if (firstName && lastName && email && phoneNumber) {
-                    var table = document.getElementById("user-table").getElementsByTagName("tbody")[0];
-                    var newRow = table.insertRow();
-
-                    var cell1 = newRow.insertCell(0);
-                    var cell2 = newRow.insertCell(1);
-                    var cell3 = newRow.insertCell(2);
-                    var cell4 = newRow.insertCell(3);
-                    var cell5 = newRow.insertCell(4);
-
-                    cell1.innerHTML = firstName;
-                    cell2.innerHTML = lastName;
-                    cell3.innerHTML = email;
-                    cell4.innerHTML = phoneNumber;
-                    cell5.innerHTML = '<button onclick="removeUser(this)">Remove</button>';
-
-                    hideAddUserForm();
-                    document.getElementById("user-form").reset();
-                } else {
-                    alert("Please fill in all fields.");
-                }
-            }
-
-            // Remove a user from the table
-            function removeUser(btn) {
-                var row = btn.parentNode.parentNode;
-                row.parentNode.removeChild(row);
-            }
-        </script>
     </div>
 </body>
 </html>
