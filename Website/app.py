@@ -51,7 +51,8 @@ def dashboard():
                                first_name=session['First_Name'], 
                                last_name=session['Last_Name'])
     # If not logged in, redirect to login page
-    return redirect(url_for('login'))
+    return redirect(url_for('login'))   
+
 
 @app.route('/customer_profile', methods=['GET', 'POST'])
 def customer_profile():
