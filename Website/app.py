@@ -71,14 +71,25 @@ def customer_profile():
             email = request.form['Customer_Email']
             phone_number = request.form['Customer_Phone']
             
-            cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name, Customer_Email, Customer_Phone) VALUES (%s, %s, %s, %s)', 
-                           (first_name, last_name, email, phone_number))
-            mysql.connection.commit()
+            # Check if the customer already exists
+            cursor.execute('SELECT * FROM CUSTOMER WHERE Customer_Email = %s', (email,))
+            existing_customer = cursor.fetchone()
+
+            if not existing_customer:
+                cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name, Customer_Email, Customer_Phone) VALUES (%s, %s, %s, %s)', 
+                               (first_name, last_name, email, phone_number))
+                mysql.connection.commit()
+            else:
+                # Handle case where the customer already exists (e.g., flash a message)
+                pass
         
         elif action == 'remove':
             customer_id = request.form['customer_id']
             cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
             mysql.connection.commit()
+
+        # Redirect to avoid form resubmission
+        return redirect(url_for('customer_profile'))
 
     cursor.execute('SELECT * FROM CUSTOMER')
     customers = cursor.fetchall()
