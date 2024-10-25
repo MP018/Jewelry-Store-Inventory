@@ -130,6 +130,31 @@
             padding: 20px;
             border-radius: 10px;
         }
+        .notes-btn {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .notes-btn:hover {
+            background-color: #57574f;
+        }
+        .inventory-button{
+            background-color: #000;
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+
+        }
+        .inventory-button:hover {
+            background-color: #57574f;
+        }
+        
     </style>
 </head>
 <body>
@@ -141,11 +166,14 @@
     <div class="sidebar">
         <a href="dashboard.html">Dashboard</a>
         <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
+        <a href="inventory.html"><button class="inventory-button">Inventory</button></a>
+        <a href="notes.html"><button class="notes-btn">Manage Notes</button></a>
     </div>
 
     <div class="content">
         <h1>Customer Profile</h1>
 
+        
     <!-- Table to display user details -->
     <table id="user-table">
         <thead>
@@ -164,7 +192,7 @@
                 <td>Doe</td>
                 <td>johndoe@example.com</td>
                 <td>123-456-7890</td>
-                <td><button onclick="removeUser(this)">Remove</button></td>
+                <td ><button onclick="removeUser(this)" >Remove</button></td>
             </tr>
         </tbody>
     </table>
@@ -244,6 +272,7 @@
         function removeUser(btn) {
             var row = btn.parentNode.parentNode;
             row.parentNode.removeChild(row);
+            
         }
     </script>
 
