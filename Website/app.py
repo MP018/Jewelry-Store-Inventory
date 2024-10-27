@@ -3,8 +3,8 @@ from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
 import io
-
-
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -17,6 +17,14 @@ app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
+
+# Set the upload folder
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 # Initialize MySQL
 mysql = MySQL(app)
@@ -111,18 +119,23 @@ def inventory():
         weight = request.form['weight']
         description = request.form['description']
         picture = request.files['picture']
-    
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(
-            'INSERT INTO ITEM (SKU, Picture, Price, Name, Quantity) VALUES (%s, %s, %s, %s, %s)',
-            (sku, picture, price, item_name, quantity)
-        )
-        cursor.execute(
-            'INSERT INTO ITEM_TAGS (SKU, Material, Gemstone, Weight, Description) VALUES (%s, %s, %s, %s, %s)',
-            (sku, material, gemstone, weight, description)
-        )
-        mysql.connection.commit()
-        cursor.close()
+
+        if picture and allowed_file(picture.filename):
+            filename = secure_filename(picture.filename)
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            picture.save(picture_path)
+        
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(
+                'INSERT INTO ITEM (SKU, Picture, Price, Name, Quantity) VALUES (%s, %s, %s, %s, %s)',
+                (sku, filename, price, item_name, quantity)
+            )
+            cursor.execute(
+                'INSERT INTO ITEM_TAGS (SKU, Material, Gemstone, Weight, Description) VALUES (%s, %s, %s, %s, %s)',
+                (sku, material, gemstone, weight, description)
+            )
+            mysql.connection.commit()
+            cursor.close()
 
         return redirect(url_for('inventory'))
 
@@ -156,7 +169,6 @@ def remove_item(sku):
     mysql.connection.commit()
     cursor.close()
     return '', 204  # No content
-
 
 @app.route('/inventory/image/<sku>', methods=['GET'])
 def get_image(sku):
@@ -201,8 +213,6 @@ def delete_note(title):
     mysql.connection.commit()
     cursor.close()
     return redirect(url_for('notes'))  # Redirect back to notes after deletion
-
-
 
 # Logout route
 @app.route('/logout')
