@@ -14,7 +14,31 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* prevent scrollbars */
         }
+
+        /* Animation keyframes for logo */
+        @keyframes moveBack {
+            0% {
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                transform: translateX(-150px) scale(0.7); /* Move and scale down */
+            }
+        }
+
+        /* Animation keyframes for login form pop out */
+        @keyframes popOut {
+            0% {
+                opacity: 0;
+                transform: scale(0.7); /* Start smaller */
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1); /* End at full size */
+            }
+        }
+
         .container {
             background-color: #eae3d2; /* slightly darker beige */
             padding: 30px;
@@ -22,19 +46,26 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             text-align: center;
             width: 400px; /* fixed width for better alignment */
+            animation: popOut 1s ease-out forwards; /* Pop out animation */
+            animation-delay: 1s; /* Delay to sync with logo animation */
+            opacity: 0; /* Initially hidden */
         }
+
         h1 {
             font-size: 24px;
             margin-bottom: 10px;
         }
+
         .input-group {
             margin-bottom: 15px;
             text-align: left; /* align labels to the left */
         }
+
         label {
             font-size: 14px;
             color: #333; /* darker text for labels */
         }
+
         input[type="email"],
         input[type="password"] {
             width: 100%;
@@ -43,6 +74,7 @@
             border-radius: 5px;
             margin-top: 5px;
         }
+
         button {
             background-color: #000; /* black button */
             color: #fff; /* white text */
@@ -53,30 +85,31 @@
             font-size: 16px; /* larger button text */
             width: 100%; /* full width for button */
         }
+
         button:hover {
             background-color: #57574f; /* dark grey on hover */
         }
+
         .register-btn {
             background-color: #ccc; /* grey button */
             margin-top: 10px; /* spacing above register button */
         }
+
         .logo {
             font-size: 20px; /* adjusted font size */
             font-weight: bold;
             margin-top: 20px;
             color: #000;
         }
-        .brand-logo {
-            text-align: center;
-            margin-top: 20px;
-        }
+
         #img {
-            position:fixed; /* positioning the logo */
+            position: fixed;
             bottom: 250px;
             right: 55px;
-            background-color:#f5f5dc;
+            background-color: #f5f5dc;
             border: 5px solid hsl(49, 52%, 69%);
             border-radius: 300%;
+            animation: moveBack 1s ease-out forwards; /* Move back animation */
         }
     </style>
 </head>
