@@ -59,7 +59,6 @@ def dashboard():
 # Customer Profile page
 @app.route('/customer_profile', methods=['GET', 'POST'])
 def customer_profile():
-    # Ensure user is logged in before showing the customer profile
     if 'loggedin' not in session:
         return redirect(url_for('login'))
 
@@ -69,12 +68,12 @@ def customer_profile():
         action = request.form['action']
         
         if action == 'add':
+            # Add a new customer
             first_name = request.form['first_name']
             last_name = request.form['last_name']
             email = request.form['Customer_Email']
             phone_number = request.form['Customer_Phone']
             
-            # Check if the customer already exists
             cursor.execute('SELECT * FROM CUSTOMER WHERE Customer_Email = %s', (email,))
             existing_customer = cursor.fetchone()
 
@@ -82,28 +81,22 @@ def customer_profile():
                 cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name, Customer_Email, Customer_Phone) VALUES (%s, %s, %s, %s)', 
                                (first_name, last_name, email, phone_number))
                 mysql.connection.commit()
-            else:
-                # Handle case where the customer already exists (e.g., flash a message)
-                pass
         
         elif action == 'remove':
+            # Remove a customer
             customer_id = request.form['customer_id']
             cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
             mysql.connection.commit()
 
-        # Redirect to avoid form resubmission
-        return redirect(url_for('customer_profile'))
+        elif action == 'select':
+            # Select a customer and store their ID in session
+            customer_id = request.form['customer_id']
+            session['Customer_ID'] = customer_id  # Store customer ID in session
+            return redirect(url_for('notes'))  # Redirect to notes after selecting customer
 
     cursor.execute('SELECT * FROM CUSTOMER')
     customers = cursor.fetchall()
-
-    return render_template('customer_profile.html', 
-                           first_name=session['First_Name'], 
-                           last_name=session['Last_Name'],
-                           customers=customers)
-
-
-import uuid  # Import UUID for unique filenames
+    return render_template('customer_profile.html', customers=customers)
 
 # Inventory route
 @app.route('/inventory', methods=['GET', 'POST'])
@@ -177,34 +170,39 @@ def get_image(sku):
     else:
         return '', 404  # Not found
 
-# Notes page
 @app.route('/notes', methods=['GET', 'POST'])
 def notes():
-    # Ensure user is logged in before showing the notes
-    if 'loggedin' not in session:
-        return redirect(url_for('login'))
+    # Check if 'Customer_ID' is in session; if not, redirect to customer_profile
+    if 'Customer_ID' not in session:
+        return redirect(url_for('customer_profile'))
 
+    customer_id = session['Customer_ID']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     if request.method == 'POST':
-        customer_id = request.form['customer_id']
+        note_title = request.form['note_title']
         note_content = request.form['note_content']
 
-        # Add the new note
-        cursor.execute('INSERT INTO NOTES (Customer_ID, Note_Content) VALUES (%s, %s)', 
-                       (customer_id, note_content))
+        # Add a new note
+        cursor.execute('INSERT INTO NOTES (title, content, customer_id) VALUES (%s, %s, %s)', 
+                       (note_title, note_content, customer_id))
         mysql.connection.commit()
-
-        # Redirect to avoid form resubmission
         return redirect(url_for('notes'))
 
-    cursor.execute('SELECT * FROM NOTES')
+    # Fetch notes for the selected customer
+    cursor.execute('SELECT title, content FROM NOTES WHERE customer_id = %s', (customer_id,))
     notes = cursor.fetchall()
+    return render_template('notes.html', notes=notes)
 
-    return render_template('notes.html', 
-                           first_name=session['First_Name'], 
-                           last_name=session['Last_Name'],
-                           notes=notes)
+@app.route('/notes/delete/<title>', methods=['POST'])
+def delete_note(title):
+    cursor = mysql.connection.cursor()
+    cursor.execute('DELETE FROM NOTES WHERE title = %s', (title,))
+    mysql.connection.commit()
+    cursor.close()
+    return redirect(url_for('notes'))  # Redirect back to notes after deletion
+
+
 
 # Logout route
 @app.route('/logout')

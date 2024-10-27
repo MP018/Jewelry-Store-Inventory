@@ -64,7 +64,7 @@
         .logout-btn:hover {
             background-color: #57574f;
         }
-        .profile-btn{
+        .profile-btn {
             background-color: #000;
             color: white;
             padding: 18px 20px;
@@ -205,9 +205,15 @@
                     <td>{{ customer.Customer_Email }}</td>
                     <td>{{ customer.Customer_Phone }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('customer_profile') }}">
+                        <form method="POST" style="display:inline;">
                             <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
-                            <button type="submit" name="action" value="remove">Remove</button>
+                            <input type="hidden" name="action" value="select">
+                            <button type="submit">Select</button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
+                            <input type="hidden" name="action" value="remove">
+                            <button type="submit" style="background-color: red; color: white;">Remove</button>
                         </form>
                     </td>
                 </tr>

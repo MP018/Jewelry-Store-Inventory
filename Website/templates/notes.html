@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JewelryNest Notes</title>
     <style>
-        
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5dc;
@@ -53,7 +52,7 @@
             margin-left: 220px;
             padding: 20px;
         }
-        .logout-btn {
+        .logout-btn, .dashboard-btn, .profile-btn, .inventory-button, .notes-btn {
             background-color: #000;
             color: white;
             padding: 10px 15px;
@@ -61,19 +60,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .dashboard-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .dashboard-btn:hover {
+        .logout-btn:hover, .dashboard-btn:hover, .profile-btn:hover, .inventory-button:hover, .notes-btn:hover {
             background-color: #57574f;
         }
         .notes-section {
@@ -130,55 +117,20 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        .profile-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-btn:hover{
-            background-color: #57574f;
-        }
-        .notes-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .notes-btn:hover {
-            background-color: #57574f;
-        }
-        .inventory-button{
-            background-color: #000;
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-
-        }
-        .inventory-button:hover {
-            background-color: #57574f;
-        }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
     </div>
 
     <div class="sidebar">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
-        <a href="inventory.html"><button class="inventory-button">Inventory</button></a>
-        <a href="notes.html"><button class="notes-btn">Manage Notes</button></a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
+        <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
+        <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
     </div>
 
     <div class="content">
@@ -193,83 +145,52 @@
         <div class="notes-section">
             <div class="add-note">
                 <h3>Add a New Note</h3>
-                <input type="text" id="noteTitle" placeholder="Note Title">
-                <textarea id="noteContent" placeholder="Note Content"></textarea>
-                <button id="addNoteBtn">Add Note</button>
+                <form action="{{ url_for('notes') }}" method="POST">
+                    <input type="text" name="note_title" placeholder="Note Title" required>
+                    <textarea name="note_content" placeholder="Note Content" required></textarea>
+                    <button type="submit">Add Note</button>
+                </form>
             </div>
 
             <!-- List of Notes -->
             <h3>All Notes</h3>
-            <div id="notesContainer"></div>
+            <div id="notesContainer">
+                {% for note in notes %}
+                <div class="note-item">
+                    <div>
+                        <strong>{{ note.title }}</strong>
+                        <p>{{ note.content }}</p>
+                    </div>
+                    <form action="{{ url_for('delete_note', title=note.title) }}" method="POST" style="display: inline;">
+                        <button type="submit">Remove</button>
+                    </form>
+                </div>
+                {% else %}
+                <p>No notes available.</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const notesContainer = document.getElementById('notesContainer');
-            const noteTitle = document.getElementById('noteTitle');
-            const noteContent = document.getElementById('noteContent');
-            const addNoteBtn = document.getElementById('addNoteBtn');
             const filterInput = document.getElementById('filterInput');
-
-            let notes = JSON.parse(localStorage.getItem('notes')) || [];
-
-            function displayNotes() {
-                notesContainer.innerHTML = '';
-                notes.forEach((note, index) => {
-                    const noteItem = document.createElement('div');
-                    noteItem.className = 'note-item';
-                    noteItem.innerHTML = `
-                        <div>
-                            <strong>${note.title}</strong>
-                            <p>${note.content}</p>
-                        </div>
-                        <button onclick="removeNote(${index})">Remove</button>
-                    `;
-                    notesContainer.appendChild(noteItem);
-                });
-            }
-
-            addNoteBtn.addEventListener('click', function() {
-                const title = noteTitle.value.trim();
-                const content = noteContent.value.trim();
-                if (title && content) {
-                    notes.push({ title, content });
-                    localStorage.setItem('notes', JSON.stringify(notes));
-                    displayNotes();
-                    noteTitle.value = '';
-                    noteContent.value = '';
-                }
-            });
-
-            window.removeNote = function(index) {
-                notes.splice(index, 1);
-                localStorage.setItem('notes', JSON.stringify(notes));
-                displayNotes();
-            }
+            const notesContainer = document.getElementById('notesContainer');
 
             filterInput.addEventListener('input', function() {
                 const searchText = filterInput.value.toLowerCase();
-                const filteredNotes = notes.filter(note => 
-                    note.title.toLowerCase().includes(searchText) || 
-                    note.content.toLowerCase().includes(searchText)
-                );
-                notesContainer.innerHTML = '';
-                filteredNotes.forEach((note, index) => {
-                    const noteItem = document.createElement('div');
-                    noteItem.className = 'note-item';
-                    noteItem.innerHTML = `
-                        <div>
-                            <strong>${note.title}</strong>
-                            <p>${note.content}</p>
-                        </div>
-                        <button onclick="removeNote(${index})">Remove</button>
-                    `;
-                    notesContainer.appendChild(noteItem);
+                const notes = Array.from(notesContainer.getElementsByClassName('note-item'));
+                
+                notes.forEach(note => {
+                    const title = note.querySelector('strong').textContent.toLowerCase();
+                    const content = note.querySelector('p').textContent.toLowerCase();
+                    if (title.includes(searchText) || content.includes(searchText)) {
+                        note.style.display = '';
+                    } else {
+                        note.style.display = 'none';
+                    }
                 });
             });
-
-            displayNotes();
         });
     </script>
 
