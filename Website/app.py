@@ -19,7 +19,7 @@ app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
 
 # Set the upload folder
-UPLOAD_FOLDER = 'static/images'
+UPLOAD_FOLDER = 'Website/static/images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure the upload folder exists
