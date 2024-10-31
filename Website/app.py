@@ -102,6 +102,8 @@ def customer_profile():
             session['Customer_ID'] = customer_id  # Store customer ID in session
             return redirect(url_for('notes'))  # Redirect to notes after selecting customer
 
+        return redirect(url_for('customer_profile'))  # Redirect to the same page to prevent form resubmission
+
     cursor.execute('SELECT * FROM CUSTOMER')
     customers = cursor.fetchall()
     return render_template('customer_profile.html', customers=customers)
