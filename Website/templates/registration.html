@@ -16,7 +16,7 @@
             overflow: hidden; /* prevents scrolling */
         }
 
-        /* Pop-up animation */
+        /* Pop-up Animation */
         @keyframes popUp {
             0% {
                 transform: scale(0.7);
@@ -100,12 +100,22 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Register</h1>
         <p>Create your account.</p>
+
+        <!-- Display error message if any -->
+        {% if msg %}
+        <div class="error-message">{{ msg }}</div>
+        {% endif %}
 
         <!-- Updated Registration Form with action pointing to the Flask register route -->
         <form action="/register" method="POST">
