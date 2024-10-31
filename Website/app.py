@@ -19,7 +19,7 @@ app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
 
 # Set the upload folder
-UPLOAD_FOLDER = 'Website/static/images'
+UPLOAD_FOLDER = 'static/images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure the upload folder exists
@@ -182,6 +182,7 @@ def get_image(sku):
     else:
         return '', 404  # Not found
 
+#notes route
 @app.route('/notes', methods=['GET', 'POST'])
 def notes():
     # Check if 'Customer_ID' is in session; if not, redirect to customer_profile
@@ -232,11 +233,17 @@ def register():
     msg = ''
     if request.method == 'POST':
         print("Form submitted!")  # Debugging statement
-        if 'name' in request.form and 'Employee_Password' in request.form and 'Employee_Email' in request.form:
+        if 'name' in request.form and 'Employee_Password' in request.form and 'Employee_Email' in request.form and 'confirm_password' in request.form:
             name = request.form['name']
             firstName, lastName = name.split(" ", 1)
             password = request.form['Employee_Password']
+            confirm_password = request.form['confirm_password']
             email = request.form['Employee_Email']
+
+            # Check if passwords match
+            if password != confirm_password:
+                msg = 'Passwords do not match!'
+                return render_template('registration.html', msg=msg)
 
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM EMPLOYEE WHERE Employee_Email = %s', (email,))
