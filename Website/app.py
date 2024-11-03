@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -29,6 +29,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 # Initialize MySQL
 mysql = MySQL(app)
 
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # Login route
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -56,13 +62,11 @@ def login():
 # Dashboard page
 @app.route('/dashboard')
 def dashboard():
-    # Ensure user is logged in before showing the dashboard
     if 'loggedin' in session:
         return render_template('dashboard.html', 
                                first_name=session['First_Name'], 
                                last_name=session['Last_Name'])
-    # If not logged in, redirect to login page
-    return redirect(url_for('login'))   
+    return redirect(url_for('login'))
 
 # Customer Profile page
 @app.route('/customer_profile', methods=['GET', 'POST'])
@@ -76,7 +80,6 @@ def customer_profile():
         action = request.form['action']
         
         if action == 'add':
-            # Add a new customer
             first_name = request.form['first_name']
             last_name = request.form['last_name']
             email = request.form['Customer_Email']
@@ -91,18 +94,16 @@ def customer_profile():
                 mysql.connection.commit()
         
         elif action == 'remove':
-            # Remove a customer
             customer_id = request.form['customer_id']
             cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
             mysql.connection.commit()
 
         elif action == 'select':
-            # Select a customer and store their ID in session
             customer_id = request.form['customer_id']
-            session['Customer_ID'] = customer_id  # Store customer ID in session
-            return redirect(url_for('notes'))  # Redirect to notes after selecting customer
+            session['Customer_ID'] = customer_id
+            return redirect(url_for('notes'))
 
-        return redirect(url_for('customer_profile'))  # Redirect to the same page to prevent form resubmission
+        return redirect(url_for('customer_profile'))
 
     cursor.execute('SELECT * FROM CUSTOMER')
     customers = cursor.fetchall()
@@ -111,6 +112,9 @@ def customer_profile():
 # Inventory route
 @app.route('/inventory', methods=['GET', 'POST'])
 def inventory():
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         sku = request.form['sku']
         item_name = request.form['item_name']
@@ -141,7 +145,6 @@ def inventory():
 
         return redirect(url_for('inventory'))
 
-    # For GET request, fetch the inventory items with tags
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('''
         SELECT ITEM.SKU, ITEM.Picture, ITEM.Price, ITEM.Name, ITEM.Quantity, 
@@ -154,40 +157,23 @@ def inventory():
 
     return render_template('inventory.html', items=items)
 
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/inventory/remove/<sku>', methods=['POST'])
-def remove_item(sku):
-    cursor = mysql.connection.cursor()
-    
-    # First, delete any related entries in ITEM_TAGS
-    cursor.execute("DELETE FROM ITEM_TAGS WHERE SKU = %s", (sku,))
-    
-    # Now delete the item from the ITEM table
-    cursor.execute("DELETE FROM ITEM WHERE SKU = %s", (sku,))
-    
-    mysql.connection.commit()
-    cursor.close()
-    return '', 204  # No content
-
+# Get image route
 @app.route('/inventory/image/<sku>', methods=['GET'])
 def get_image(sku):
-    cursor = mysql.connection.cursor()
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT Picture FROM ITEM WHERE SKU = %s", (sku,))
     result = cursor.fetchone()
     cursor.close()
 
-    if result and result[0]:
-        return send_file(io.BytesIO(result[0]), mimetype='image/jpeg')
+    if result:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['Picture'])
+        return send_file(image_path, mimetype='image/jpeg')
     else:
-        return '', 404  # Not found
+        return '', 404
 
-#notes route
+# Notes route
 @app.route('/notes', methods=['GET', 'POST'])
 def notes():
-    # Check if 'Customer_ID' is in session; if not, redirect to customer_profile
     if 'Customer_ID' not in session:
         return redirect(url_for('customer_profile'))
 
@@ -197,14 +183,10 @@ def notes():
     if request.method == 'POST':
         note_title = request.form['note_title']
         note_content = request.form['note_content']
-
-        # Add a new note
         cursor.execute('INSERT INTO NOTES (title, content, customer_id) VALUES (%s, %s, %s)', 
                        (note_title, note_content, customer_id))
         mysql.connection.commit()
-        return redirect(url_for('notes'))
 
-    # Fetch notes for the selected customer
     cursor.execute('SELECT title, content FROM NOTES WHERE customer_id = %s', (customer_id,))
     notes = cursor.fetchall()
     return render_template('notes.html', notes=notes)
@@ -215,18 +197,12 @@ def delete_note(title):
     cursor.execute('DELETE FROM NOTES WHERE title = %s', (title,))
     mysql.connection.commit()
     cursor.close()
-    return redirect(url_for('notes'))  # Redirect back to notes after deletion
+    return redirect(url_for('notes'))
 
 # Logout route
 @app.route('/logout')
 def logout():
-    # Remove user session data
-    session.pop('loggedin', None)
-    session.pop('Employee_ID', None)
-    session.pop('Employee_Email', None)
-    session.pop('First_Name', None)
-    session.pop('Last_Name', None)
-    # Redirect to login page
+    session.clear()
     return redirect(url_for('login'))
 
 # Registration route
@@ -234,7 +210,6 @@ def logout():
 def register():
     msg = ''
     if request.method == 'POST':
-        print("Form submitted!")  # Debugging statement
         if 'name' in request.form and 'Employee_Password' in request.form and 'Employee_Email' in request.form and 'confirm_password' in request.form:
             name = request.form['name']
             firstName, lastName = name.split(" ", 1)
@@ -242,7 +217,6 @@ def register():
             confirm_password = request.form['confirm_password']
             email = request.form['Employee_Email']
 
-            # Check if passwords match
             if password != confirm_password:
                 msg = 'Passwords do not match!'
                 return render_template('registration.html', msg=msg)
@@ -260,18 +234,24 @@ def register():
             elif not name or not password or not email:
                 msg = 'Please fill out the form!'
             else:
-                try:
-                    # Add password for employee
-                    cursor.execute('INSERT INTO EMPLOYEE (First_Name, Last_Name, Employee_Email, Employee_Password) VALUES (%s, %s, %s, %s)', 
-                                   (firstName, lastName, email, password))
-                    mysql.connection.commit()
-                    msg = 'You have successfully registered!'
-                    print("Registration successful!")
-                    return redirect(url_for('login'))
-                except MySQLdb.Error as err:
-                    print(f"Database error: {err}")
-                    msg = 'There was an issue with registration. Please try again.'
+                cursor.execute('INSERT INTO EMPLOYEE (First_Name, Last_Name, Employee_Email, Employee_Password) VALUES (%s, %s, %s, %s)', 
+                               (firstName, lastName, email, password))
+                mysql.connection.commit()
+                msg = 'You have successfully registered!'
+                return redirect(url_for('login'))
     return render_template('registration.html', msg=msg)
+
+@app.route('/repair_items')
+def repair_items():
+    # You can add the logic for the repair items page here
+    return render_template('repair_items.html')
+
+@app.route('/orders_receipts')
+def orders_receipts():
+    # Add the logic for orders and receipts page here
+    return render_template('orders_receipts.html')
+
+
 
 if __name__ == '__main__':
     app.run()

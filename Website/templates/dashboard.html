@@ -51,11 +51,13 @@
             padding-top: 20px;
         }
         .sidebar a {
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: black;
             padding: 15px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 15px;
         }
         .sidebar a:hover {
             background-color: #ccc;
@@ -98,7 +100,7 @@
         .notes-btn:hover {
             background-color: #57574f;
         }
-        .inventory-btn{
+        .inventory-button{
             background-color: #000;
             color: white;
             padding: 18px 40px;
@@ -107,7 +109,31 @@
             cursor: pointer;
 
         }
-        .inventory-btn:hover {
+        .inventory-button:hover {
+            background-color: #57574f;
+        }
+        .repair-btn{
+            background-color: #000;
+            color: white;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            
+        }
+        .repair-btn:hover{
+            background-color: #57574f;
+        }
+        .orders-receipts{
+            background-color: #000;
+            color: white;
+            padding: 18px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            
+        }
+        .orders-receipts:hover{
             background-color: #57574f;
         }
         
@@ -116,32 +142,35 @@
 </head>
 <body>
 
+    <!-- Navbar -->
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
     </div>
 
+    <!-- Sidebar -->
     <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}#dashboard">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
-        <a href="{{ url_for('inventory') }}"><button class="inventory-btn">Inventory</button></a>
+        <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
         <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
+        <a href="{{ url_for('repair_items') }}"><button class="repair-btn">Repair Items</button></a>
+        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
     </div>
 
+    <!-- Main Content -->
     <div class="content">
-        <h2>Welcome, {{ first_name }}!</h2>
-        <h3>Your Dashboard Overview</h3>
+        <h2>Welcome to your Dashboard!</h2>
         <p>This is where you can view your account information, profile, and more.</p>
         
-        <h3>Customer Profile</h3>
+        <!-- Customer Profile Section -->
+        <h3 id="customer-profile">Customer Profile</h3>
         <p>View and edit customer information here.</p>
-        
-        <h3>Your Recent Activity</h3>
-        <ul>
-            <li>Item Added: Gold Necklace on 10/24/2024</li>
-            <li>Item Sold: Diamond Ring on 10/23/2024</li>
-            <li>Note Created: Customer Feedback on 10/22/2024</li>
-        </ul>
+
+        <!-- Sample Profile Data -->
+        <div>
+            <pre>Hello, Admin</pre>
+        </div>
     </div>
 
 </body>

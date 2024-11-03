@@ -40,11 +40,13 @@
             padding-top: 20px;
         }
         .sidebar a {
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: black;
             padding: 15px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 15px;
         }
         .sidebar a:hover {
             background-color: #ccc;
@@ -64,15 +66,19 @@
         .logout-btn:hover {
             background-color: #57574f;
         }
-        .profile-btn {
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
             background-color: #000;
             color: white;
-            padding: 18px 20px;
+            padding: 18px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 2px;
+            width: calc(100% - 30px); /* Adjust button width */
         }
-        
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
+        }
         h1 {
             text-align: center;
         }
@@ -145,24 +151,23 @@
 <body>
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <!-- Link to the Flask logout route -->
         <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
     </div>
 
     <div class="sidebar">
-        <!-- Link to the Flask dashboard route -->
         <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        <!-- Link to the Flask customer profile route -->
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
+        <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
+        <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
+        <a href="{{ url_for('repair_items') }}"><button class="repair-btn">Repair Items</button></a>
+        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
     </div>
 
     <div class="content">
         <h1>Customer Profile</h1>
 
-        <!-- Button to toggle the visibility of the add customer form -->
         <button onclick="toggleAddUserForm()">Add Customer</button>
 
-        <!-- Form to add a new customer -->
         <div id="add-user-form">
             <h3>Add New Customer</h3>
             <form method="POST" action="{{ url_for('customer_profile') }}">
@@ -186,7 +191,6 @@
             </form>
         </div>
 
-        <!-- Table to display user details -->
         <table id="user-table">
             <thead>
                 <tr>
