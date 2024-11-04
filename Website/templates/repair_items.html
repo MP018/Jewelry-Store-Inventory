@@ -188,22 +188,23 @@
         <h1>Manage Repair Items</h1>
         
         <!-- Form for adding a new repair item -->
-        <form id="repair-form">
-            <input type="text" id="repair-item-id" placeholder="Repair Item ID" required>
-            <input type="text" id="repair-name" placeholder="Jewelry Name" required>
-            <input type="text" id="repair-condition" placeholder="Condition (e.g., Broken, Scratched)" required>
-            <input type="date" id="repair-date" required>
-            <input type="number" id="repair-cost" placeholder="Estimated Repair Cost ($)" required>
-            <textarea id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
-            <input type="file" id="repair-image" accept="image/*" required>
-            <input type="number" id="customer-id" placeholder="Customer ID" required>
-            <input type="number" id="employee-id" placeholder="Employee ID" required>
-            <input type="number" id="subtotal" placeholder="Subtotal ($)" required>
-            <input type="number" id="tax" placeholder="Tax ($)" required>
-            <input type="number" id="total" placeholder="Total ($)" required>
+        <form id="repair-form" method="POST" enctype="multipart/form-data" action="{{ url_for('repair_items') }}">
+            <input type="text" name="repair_item_id" id="repair-item-id" placeholder="Repair Item ID" required>
+            <input type="text" name="item_name" id="repair-name" placeholder="Jewelry Name" required>
+            <input type="text" name="condition" id="repair-condition" placeholder="Description (e.g., Broken, Scratched)" required>
+            <input type="date" name="repair_date" id="repair-date" required>
+            <input type="number" name="repair_cost" id="repair-cost" placeholder="Estimated Repair Cost ($)" required>
+            <textarea name="notes" id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
+            <input type="file" name="picture" id="repair-image" accept="image/*" required>
+            <input type="number" name="customer_id" id="customer-id" placeholder="Customer ID" required>
+            <input type="number" name="employee_id" id="employee-id" placeholder="Employee ID" required>
+            <input type="number" name="subtotal" id="subtotal" placeholder="Subtotal ($)" required>
+            <input type="number" name="tax" id="tax" placeholder="Tax ($)" required>
+            <input type="number" name="total" id="total" placeholder="Total ($)" required>
             <button type="submit">Add Repair Item</button>
         </form>
-
+        
+        
         <!-- Filter input to search through repair items -->
         <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Name, Condition)" style="width:100%; padding:10px; margin-top:20px;">
 

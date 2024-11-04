@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mysqldb import MySQL
+import logging
 import MySQLdb.cursors
 import re
 import io
@@ -19,7 +20,7 @@ app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
 
 # Set the upload folder
-UPLOAD_FOLDER = 'static/images'
+UPLOAD_FOLDER = 'Website/static/images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure the upload folder exists
@@ -28,6 +29,10 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 # Initialize MySQL
 mysql = MySQL(app)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -241,17 +246,74 @@ def register():
                 return redirect(url_for('login'))
     return render_template('registration.html', msg=msg)
 
-@app.route('/repair_items')
+@app.route('/repair_items', methods=['GET', 'POST'])
 def repair_items():
-    # You can add the logic for the repair items page here
-    return render_template('repair_items.html')
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
 
+    if request.method == 'POST':
+        try:
+            # Check if the connection is alive
+            mysql.connection.ping()
+
+            # Retrieve form data
+            repair_item_id = request.form['repair_item_id']
+            item_name = request.form['item_name']
+            condition = request.form['condition']
+            repair_date = request.form['repair_date']
+            repair_cost = request.form['repair_cost']
+            notes = request.form['notes']
+            picture = request.files['picture']
+            customer_id = request.form['customer_id']
+            employee_id = request.form['employee_id']
+            subtotal = request.form['subtotal']
+            tax = request.form['tax']
+            total = request.form['total']
+
+            if picture and allowed_file(picture.filename):
+                filename = secure_filename(picture.filename)
+                picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                picture.save(picture_path)
+
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute(
+                    'INSERT INTO REPAIR_ITEM (Name, Condition, Repair_Date, Repair_Cost, Notes, Image, Customer_ID, Employee_ID, Subtotal, Tax, Total) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (item_name, condition, repair_date, repair_cost, notes, filename, customer_id, employee_id, subtotal, tax, total)
+                )
+                mysql.connection.commit()
+                cursor.close()
+                print("Database insertion completed.")
+                return redirect(url_for('repair_items'))
+        except Exception as e:
+            logging.error("Error during insertion: %s", e)
+            print("Error during insertion:", e)
+            return "Error during database operation", 500
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM REPAIR_ITEM')
+    items = cursor.fetchall()
+    cursor.close()
+
+    return render_template('repair_items.html', repair_items=items)
+
+# Get image route
+@app.route('/repair_items/image/<repair_item_id>', methods=['GET'])
+def get_repair_item_image(repair_item_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT Image FROM REPAIR_ITEM WHERE Repair_Item_ID = %s", (repair_item_id,))
+    result = cursor.fetchone()
+    cursor.close()
+
+    if result:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['Image'])
+        return send_file(image_path, mimetype='image/jpeg')
+    else:
+        return '', 404
+    
 @app.route('/orders_receipts')
 def orders_receipts():
     # Add the logic for orders and receipts page here
     return render_template('orders_receipts.html')
 
-
-
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
