@@ -9,6 +9,11 @@ from werkzeug.utils import secure_filename
 import ssl
 import mysql.connector
 import base64
+import webbrowser
+import threading
+import time
+import sys
+import traceback
 
 app = Flask(__name__)
 
@@ -19,38 +24,53 @@ app.secret_key = ':)'
 current_dir = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(current_dir, 'Backend', 'ca.pem')
 
-# File upload configuration
-UPLOAD_FOLDER = os.path.join(current_dir, 'static', 'images')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# Database configuration
-app.config['MYSQL_HOST'] = 'palacejewelers-palacejewelers.j.aivencloud.com'
-app.config['MYSQL_USER'] = 'avnadmin'
-app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
-app.config['MYSQL_DB'] = 'PalaceDatabase'
-app.config['MYSQL_PORT'] = 16246
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+print(f"Looking for certificate at: {ca_path}")
+if not os.path.exists(ca_path):
+    print("Error: ca.pem not found!")
+    sys.exit(1)
+else:
+    print("Certificate file found!")
 
 # SSL Configuration
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
+ssl_context.verify_mode = ssl.CERT_REQUIRED
 try:
-    ssl_context.load_verify_locations(ca_path)
+    ssl_context.load_verify_locations(cafile=ca_path)
+    print("SSL context created successfully")
 except Exception as e:
-    print(f"Error loading SSL certificate: {e}")
+    print(f"SSL context creation failed: {e}")
+    traceback.print_exc()
+    sys.exit(1)
 
-app.config['MYSQL_SSL_CA'] = ca_path
-app.config['MYSQL_SSL'] = {
-    'ca': ca_path,
-    'check_hostname': False,
-    'verify_mode': ssl.CERT_NONE,
-    'ssl_context': ssl_context
-}
+# Update MySQL configuration
+app.config.update(
+    MYSQL_HOST='palacejewelers-palacejewelers.j.aivencloud.com',
+    MYSQL_USER='avnadmin',
+    MYSQL_PASSWORD='AVNS_eTE1cr2Go3sTM_VZneL',
+    MYSQL_DB='PalaceDatabase',
+    MYSQL_PORT=16246,
+    MYSQL_CURSORCLASS='DictCursor',
+    MYSQL_SSL_CA=ca_path,
+    MYSQL_SSL={
+        'ca': ca_path,
+        'check_hostname': False,
+        'verify_mode': ssl.CERT_REQUIRED,
+        'ssl_context': ssl_context
+    }
+)
 
-# Initialize MySQL
-mysql = MySQL(app)
+# Initialize MySQL with custom SSL handling
+try:
+    mysql = MySQL(app)
+    # Test connection immediately
+    with app.app_context():
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT 1')
+        cursor.close()
+        print("Initial database connection test successful!")
+except Exception as e:
+    print(f"Error during MySQL initialization: {e}")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -58,13 +78,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def init_db():
     with app.app_context():
         try:
+            print("Attempting database connection...")
             cursor = mysql.connection.cursor()
             cursor.execute('SELECT 1')
+            result = cursor.fetchone()
             cursor.close()
-            print("Database connection successful!")
+            print(f"Database test query result: {result}")
             return True
         except Exception as e:
-            print(f"Error connecting to database: {e}")
+            print("\nDetailed connection error:")
+            print("-" * 50)
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print("\nTraceback:")
+            traceback.print_exc()
+            print("-" * 50)
             return False
 
 # Allowed file extensions
@@ -499,8 +527,31 @@ def orders_receipts():
         print(f"Error in orders_receipts: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+def open_browser():
+    """Function to open the browser after a short delay"""
+    time.sleep(1.5)  # Wait for server to start
+    webbrowser.open('http://127.0.0.1:5000/')
+
 if __name__ == '__main__':
-    if init_db():  # Only run the app if database connection is successful
-        app.run(debug=True)
-    else:
-        print("Failed to initialize database connection. Application not started.")
+    try:
+        print("\nStarting JewelryNest Application...")
+        print("Initializing database connection...")
+        
+        if init_db():
+            print("\nDatabase connection successful!")
+            print("Starting web server...")
+            threading.Thread(target=open_browser, daemon=True).start()
+            app.run(debug=False)
+        else:
+            print("\nFailed to initialize database connection.")
+            print("Troubleshooting steps:")
+            print("1. Verify ca.pem is in the Backend folder")
+            print("2. Check internet connection")
+            print("3. Verify database credentials")
+            print("\nPress Enter to exit...")
+            input()
+            
+    except Exception as e:
+        print(f"\nApplication error: {e}")
+        traceback.print_exc()
+        input("\nPress Enter to exit...")
