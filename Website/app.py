@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
 from flask_mysqldb import MySQL
 import logging
 import MySQLdb.cursors
@@ -19,9 +19,12 @@ app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
 
-# Set the upload folder
+# File upload configuration
 UPLOAD_FOLDER = 'Website/static/images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create upload folder if it doesn't exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Ensure the upload folder exists
 if not os.path.exists(UPLOAD_FOLDER):
@@ -253,54 +256,77 @@ def repair_items():
 
     if request.method == 'POST':
         try:
-            # Check if the connection is alive
-            mysql.connection.ping()
-
-            # Retrieve form data
-            repair_item_id = request.form['repair_item_id']
+            # Get form data
+            repair_order_number = request.form['repair_order_number']
             item_name = request.form['item_name']
             condition = request.form['condition']
             repair_date = request.form['repair_date']
-            repair_cost = request.form['repair_cost']
             notes = request.form['notes']
-            picture = request.files['picture']
             customer_id = request.form['customer_id']
             employee_id = request.form['employee_id']
             subtotal = request.form['subtotal']
             tax = request.form['tax']
             total = request.form['total']
-
+            
+            # Handle file upload
+            picture = request.files['picture']
+            filename = None
             if picture and allowed_file(picture.filename):
                 filename = secure_filename(picture.filename)
-                picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                picture.save(picture_path)
-
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute(
-                    'INSERT INTO REPAIR_ITEM (Name, Condition, Repair_Date, Repair_Cost, Notes, Image, Customer_ID, Employee_ID, Subtotal, Tax, Total) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                    (item_name, condition, repair_date, repair_cost, notes, filename, customer_id, employee_id, subtotal, tax, total)
-                )
-                mysql.connection.commit()
-                cursor.close()
-                print("Database insertion completed.")
-                return redirect(url_for('repair_items'))
+                picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            
+            # Insert into database
+            cursor = mysql.connection.cursor()
+            cursor.execute("""
+                INSERT INTO REPAIR_ORDER 
+                (Repair_Order_Number, Item_Name, Description, Employee_ID, Customer_ID, 
+                Image, Subtotal, Tax, Total, Repair_Date, Repair_Notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (repair_order_number, item_name, condition, employee_id, customer_id, 
+                  filename, subtotal, tax, total, repair_date, notes))
+            
+            mysql.connection.commit()
+            cursor.close()
+            
+            return jsonify({'success': True}), 200
+            
         except Exception as e:
-            logging.error("Error during insertion: %s", e)
-            print("Error during insertion:", e)
-            return "Error during database operation", 500
-
+            print(f"Error: {str(e)}")  # For debugging
+            return jsonify({'error': str(e)}), 500
+            
+    # GET request - fetch existing repair orders
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM REPAIR_ITEM')
-    items = cursor.fetchall()
+    cursor.execute('SELECT * FROM REPAIR_ORDER')
+    repair_items = cursor.fetchall()
+    
+    # Convert image data to string if it exists
+    for item in repair_items:
+        if item['Image'] and isinstance(item['Image'], bytes):
+            item['Image'] = item['Image'].decode('utf-8')
+    
     cursor.close()
+    
+    return render_template('repair_items.html', repair_items=repair_items)
 
-    return render_template('repair_items.html', repair_items=items)
+@app.route('/remove_repair_item/<repair_order_number>', methods=['POST'])
+def remove_repair_item(repair_order_number):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute('DELETE FROM REPAIR_ORDER WHERE Repair_Order_Number = %s', (repair_order_number,))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Get image route
 @app.route('/repair_items/image/<repair_item_id>', methods=['GET'])
 def get_repair_item_image(repair_item_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT Image FROM REPAIR_ITEM WHERE Repair_Item_ID = %s", (repair_item_id,))
+    cursor.execute("SELECT Image FROM REPAIR_ORDER WHERE Repair_Item_ID = %s", (repair_item_id,))
     result = cursor.fetchone()
     cursor.close()
 

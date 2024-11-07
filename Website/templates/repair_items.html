@@ -189,18 +189,20 @@
         
         <!-- Form for adding a new repair item -->
         <form id="repair-form" method="POST" enctype="multipart/form-data" action="{{ url_for('repair_items') }}">
-            <input type="text" name="repair_item_id" id="repair-item-id" placeholder="Repair Item ID" required>
+            <input type="text" name="repair_order_number" id="repair-order-number" placeholder="Repair Order Number" required>
             <input type="text" name="item_name" id="repair-name" placeholder="Jewelry Name" required>
             <input type="text" name="condition" id="repair-condition" placeholder="Description (e.g., Broken, Scratched)" required>
-            <input type="date" name="repair_date" id="repair-date" required>
-            <input type="number" name="repair_cost" id="repair-cost" placeholder="Estimated Repair Cost ($)" required>
+            <input type="date" 
+                   name="repair_date" 
+                   id="repair-date" 
+                   required>
             <textarea name="notes" id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
             <input type="file" name="picture" id="repair-image" accept="image/*" required>
             <input type="number" name="customer_id" id="customer-id" placeholder="Customer ID" required>
             <input type="number" name="employee_id" id="employee-id" placeholder="Employee ID" required>
-            <input type="number" name="subtotal" id="subtotal" placeholder="Subtotal ($)" required>
-            <input type="number" name="tax" id="tax" placeholder="Tax ($)" required>
-            <input type="number" name="total" id="total" placeholder="Total ($)" required>
+            <input type="number" step="0.01" name="subtotal" id="subtotal" placeholder="Subtotal ($)" required>
+            <input type="number" step="0.01" name="tax" id="tax" placeholder="Tax ($)" required>
+            <input type="number" step="0.01" name="total" id="total" placeholder="Total ($)" required>
             <button type="submit">Add Repair Item</button>
         </form>
         
@@ -212,11 +214,10 @@
         <table id="repair-table">
             <thead>
                 <tr>
-                    <th>Repair Item ID</th>
+                    <th>Repair Order Number</th>
                     <th>Name</th>
-                    <th>Condition</th>
+                    <th>Description</th>
                     <th>Repair Date</th>
-                    <th>Repair Cost ($)</th>
                     <th>Notes</th>
                     <th>Image</th>
                     <th>Customer ID</th>
@@ -228,89 +229,136 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Repair items will be dynamically added here -->
+                {% for item in repair_items %}
+                <tr>
+                    <td>{{ item.Repair_Order_Number }}</td>
+                    <td>{{ item.Item_Name }}</td>
+                    <td>{{ item.Description }}</td>
+                    <td>{{ item.Repair_Date }}</td>
+                    <td>{{ item.Repair_Notes }}</td>
+                    <td>
+                        {% if item.Image %}
+                            {% if item.Image|string %}
+                                <img src="{{ url_for('static', filename='images/' + item.Image|string) }}" alt="Repair Item Image">
+                            {% else %}
+                                No Image
+                            {% endif %}
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
+                    <td>{{ item.Customer_ID }}</td>
+                    <td>{{ item.Employee_ID }}</td>
+                    <td>${{ "%.2f"|format(item.Subtotal) }}</td>
+                    <td>${{ "%.2f"|format(item.Tax) }}</td>
+                    <td>${{ "%.2f"|format(item.Total) }}</td>
+                    <td><button class="remove" onclick="removeItem('{{ item.Repair_Order_Number }}')">Remove</button></td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 
     <script>
-        let repairItems = [];
-
-        document.getElementById('repair-form').addEventListener('submit', function (event) {
+        document.getElementById('repair-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             
-            const repairItemId = document.getElementById('repair-item-id').value;
-            const repairName = document.getElementById('repair-name').value;
-            const repairCondition = document.getElementById('repair-condition').value;
-            const repairDate = document.getElementById('repair-date').value;
-            const repairCost = document.getElementById('repair-cost').value;
-            const repairNotes = document.getElementById('repair-notes').value;
-            const repairImage = document.getElementById('repair-image').files[0];
-            const customerId = document.getElementById('customer-id').value;
-            const employeeId = document.getElementById('employee-id').value;
-            const subtotal = document.getElementById('subtotal').value;
-            const tax = document.getElementById('tax').value;
-            const total = document.getElementById('total').value;
+            const formData = new FormData(this);
             
-            // Create an object to store the repair item data
-            const newItem = {
-                id: repairItemId,
-                name: repairName,
-                condition: repairCondition,
-                date: repairDate,
-                cost: repairCost,
-                notes: repairNotes,
-                image: URL.createObjectURL(repairImage),
-                customerId: customerId,
-                employeeId: employeeId,
-                subtotal: subtotal,
-                tax: tax,
-                total: total
-            };
+            try {
+                const response = await fetch("{{ url_for('repair_items') }}", {
+                    method: 'POST',
+                    body: formData
+                });
 
-            repairItems.push(newItem);
-            displayRepairItems();
-            this.reset();  // Reset form after submission
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Reload the page to show updated data
+                    window.location.reload();
+                } else {
+                    throw new Error(result.error || 'Failed to add repair item');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add repair item. Please try again.');
+            }
         });
 
-        function displayRepairItems(filterValue = '') {
-            const tbody = document.querySelector('#repair-table tbody');
-            tbody.innerHTML = '';  // Clear the table body
+        // Calculate total when subtotal or tax changes
+        document.getElementById('subtotal').addEventListener('input', calculateTotal);
+        document.getElementById('tax').addEventListener('input', calculateTotal);
 
-            repairItems
-                .filter(item => {
-                    const searchableString = Object.values(item).join(' ').toLowerCase();
-                    return searchableString.includes(filterValue.toLowerCase());
-                })
-                .forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.condition}</td>
-                        <td>${item.date}</td>
-                        <td>$${item.cost}</td>
-                        <td>${item.notes}</td>
-                        <td><img src="${item.image}" alt="${item.name} Image"></td>
-                        <td>${item.customerId}</td>
-                        <td>${item.employeeId}</td>
-                        <td>$${item.subtotal}</td>
-                        <td>$${item.tax}</td>
-                        <td>$${item.total}</td>
-                        <td><button class="remove" onclick="removeItem('${item.id}')">Remove</button></td>
-                    `;
-                    tbody.appendChild(row);
-                });
+        function calculateTotal() {
+            const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+            const tax = parseFloat(document.getElementById('tax').value) || 0;
+            const total = subtotal + tax;
+            document.getElementById('total').value = total.toFixed(2);
         }
 
-        function removeItem(itemId) {
-            repairItems = repairItems.filter(item => item.id !== itemId);
-            displayRepairItems();
+        async function removeItem(orderNumber) {
+            if (confirm('Are you sure you want to remove this repair item?')) {
+                try {
+                    const response = await fetch(`/remove_repair_item/${orderNumber}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        window.location.reload();
+                    } else {
+                        throw new Error(result.error || 'Failed to remove repair item');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to remove repair item. Please try again.');
+                }
+            }
         }
 
-        document.getElementById('filter').addEventListener('input', function () {
-            const filterValue = this.value;
-            displayRepairItems(filterValue);
+        // Filter functionality
+        document.getElementById('filter').addEventListener('input', function() {
+            const filterValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#repair-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filterValue) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('repair-date').addEventListener('blur', function(e) {
+            let value = e.target.value;
+            if (!value) return;
+            
+            let date = new Date(value);
+            let year = date.getFullYear();
+            
+            if (year < 2000 || year > 2099) {
+                alert('Please enter a year between 2000 and 2099');
+                // Reset to current date
+                const today = new Date().toISOString().split('T')[0];
+                e.target.value = today;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('repair-date').value = today;
         });
     </script>
 </body>
