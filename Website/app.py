@@ -145,46 +145,124 @@ def inventory():
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
-        # Join ITEM and ITEM_TAGS tables
+        # Handle POST request (adding new item)
+        if request.method == 'POST':
+            try:
+                # Get form data
+                sku = int(request.form['sku'])
+                name = request.form['item_name']
+                price = float(request.form['price'])
+                quantity = int(request.form['quantity'])
+                material = request.form['material']
+                gemstone = request.form['gemstone']
+                weight = int(request.form['weight'])
+                description = request.form['description']
+                
+                # Handle image upload with size check
+                picture = request.files['picture']
+                if picture:
+                    # Read the image
+                    picture_data = picture.read()
+                    # Check file size (10MB limit)
+                    if len(picture_data) > 10 * 1024 * 1024:  # 10MB in bytes
+                        flash('Image file is too large. Please upload an image smaller than 10MB.', 'error')
+                        return redirect(url_for('inventory'))
+                else:
+                    picture_data = None
+                
+                # First insert into ITEM table (parent table)
+                cursor.execute('''
+                    INSERT INTO `ITEM` (SKU, Picture, Price, Name, Quantity)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (sku, picture_data, price, name, quantity))
+                
+                # Then insert into ITEM_TAGS table (child table)
+                cursor.execute('''
+                    INSERT INTO `ITEM_TAGS` (SKU, Material, Gemstone, Weight, Description)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (sku, material, gemstone, weight, description))
+                
+                mysql.connection.commit()
+                flash('Item added successfully!', 'success')
+                
+            except Exception as e:
+                mysql.connection.rollback()
+                flash(f'Error adding item: {str(e)}', 'error')
+                print(f"Error adding item: {e}")
+        
+        # Fetch all items for display
         cursor.execute('''
-            SELECT i.SKU, i.Picture, i.Price, i.Name, i.Quantity, i.Sold_Date,
-                   t.Tag, t.Material, t.Gemstone, t.Weight, t.Description
-            FROM ITEM i
-            LEFT JOIN ITEM_TAGS t ON i.SKU = t.SKU
+            SELECT 
+                i.SKU,
+                i.Picture,
+                i.Price,
+                i.Name,
+                i.Quantity,
+                i.Sold_Date,
+                t.Tag,
+                t.Material,
+                t.Gemstone,
+                t.Weight,
+                t.Description
+            FROM `ITEM` i
+            LEFT JOIN `ITEM_TAGS` t ON i.SKU = t.SKU
         ''')
         
         items = cursor.fetchall()
+        processed_items = []
         
-        # Process each item
         for item in items:
-            # Handle Picture data
-            if item['Picture'] is not None:
+            processed_item = {
+                'SKU': item['SKU'],
+                'Name': item['Name'],
+                'Price': float(item['Price']) if item['Price'] else None,
+                'Quantity': item['Quantity'],
+                'Material': item['Material'],
+                'Gemstone': item['Gemstone'],
+                'Weight': item['Weight'],
+                'Description': item['Description'],
+                'Tag': item['Tag'],
+                'Picture': None,
+                'Sold_Date': item['Sold_Date'].strftime('%Y-%m-%d %H:%M:%S') if item['Sold_Date'] else None
+            }
+            
+            # Handle BLOB data for image
+            if item['Picture']:
                 try:
-                    # If Picture is stored as a path
-                    if isinstance(item['Picture'], str):
-                        item['Picture'] = item['Picture']
-                    # If Picture is stored as bytes
-                    else:
-                        import base64
-                        item['Picture'] = f"data:image/jpeg;base64,{base64.b64encode(item['Picture']).decode('utf-8')}"
+                    image_data = base64.b64encode(item['Picture']).decode('utf-8')
+                    processed_item['Picture'] = f"data:image/jpeg;base64,{image_data}"
                 except Exception as e:
                     print(f"Error processing image for SKU {item['SKU']}: {e}")
-                    item['Picture'] = None
             
-            # Convert decimal to float for JSON serialization
-            if item['Price']:
-                item['Price'] = float(item['Price'])
-                
-            # Format datetime for display
-            if item['Sold_Date']:
-                item['Sold_Date'] = item['Sold_Date'].strftime('%Y-%m-%d %H:%M:%S')
+            processed_items.append(processed_item)
         
         cursor.close()
-        return render_template('inventory.html', items=items)
+        return render_template('inventory.html', items=processed_items)
         
     except Exception as e:
         print(f"Error in inventory: {e}")
+        import traceback
+        traceback.print_exc()
         return str(e), 500
+
+@app.route('/inventory/remove/<int:sku>', methods=['POST'])
+def remove_inventory_item(sku):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+        
+    try:
+        cursor = mysql.connection.cursor()
+        # Delete from ITEM_TAGS first (child table)
+        cursor.execute('DELETE FROM `ITEM_TAGS` WHERE SKU = %s', (sku,))
+        # Then delete from ITEM (parent table)
+        cursor.execute('DELETE FROM `ITEM` WHERE SKU = %s', (sku,))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        mysql.connection.rollback()
+        print(f"Error removing item: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # Get image route
 @app.route('/inventory/image/<sku>', methods=['GET'])

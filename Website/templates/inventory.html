@@ -218,7 +218,8 @@
             <input type="number" name="price" placeholder="Price ($)" required>
             <input type="number" name="quantity" placeholder="Quantity" required>
             <textarea name="description" placeholder="Jewelry Description" style="width:100%;"></textarea>
-            <input type="file" name="picture" accept="image/*" required>
+            <input type="file" name="picture" accept="image/*" required 
+                   onchange="validateFileSize(this)" max-size="10485760">
             <button type="submit">Add Jewelry</button>
         </form>
 
@@ -250,7 +251,11 @@
                     <td>${{ item.Price }}</td>
                     <td>{{ item.Quantity }}</td>
                     <td>{{ item.Description or 'N/A' }}</td>
-                    <td><img src="{{ item.Picture }}" alt="{{ item.Name }}" onerror="this.src='/static/images/default.jpg'"></td>
+                    {% if item.Picture %}
+                        <td><img src="{{ item.Picture }}" alt="{{ item.Name }}" style="max-width: 200px;"></td>
+                    {% else %}
+                        <td><div class="no-image">No Image</div></td>
+                    {% endif %}
                     <td><button class="remove" onclick="removeItem('{{ item.SKU }}')">Remove</button></td>
                 </tr>
                 {% endfor %}
@@ -259,7 +264,7 @@
     </div>
 
     <script>
-        let inventory = {{ items | tojson }};
+        let inventory = {{ items | tojson | safe }};
 
         function displayInventory(filterValue = '') {
             const tbody = document.querySelector('#inventory-table tbody');
@@ -274,6 +279,10 @@
             // Create new rows for each filtered item
             filteredInventory.forEach(item => {
                 const row = document.createElement('tr');
+                const pictureHtml = item.Picture 
+                    ? `<img src="${item.Picture}" alt="${item.Name}" style="max-width: 200px;">`
+                    : `<div class="no-image">No Image</div>`;
+                
                 row.innerHTML = `
                     <td>${item.SKU}</td>
                     <td>${item.Name}</td>
@@ -283,7 +292,7 @@
                     <td>$${item.Price}</td>
                     <td>${item.Quantity}</td>
                     <td>${item.Description || 'N/A'}</td>
-                    <td><img src="${item.Picture}" alt="${item.Name}" onerror="this.src='/static/images/default.jpg'"></td>
+                    <td>${pictureHtml}</td>
                     <td><button class="remove" onclick="removeItem('${item.SKU}')">Remove</button></td>
                 `;
                 tbody.appendChild(row);
@@ -299,8 +308,9 @@
                 url: '/inventory/remove/' + sku,
                 type: 'POST',
                 success: function(result) {
-                    // Remove the item from the DOM
+                    // Remove the item from both the DOM and the inventory array
                     $('button[onclick="removeItem(\'' + sku + '\')"]').closest('tr').remove();
+                    inventory = inventory.filter(item => item.SKU !== sku);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error removing item:', error);
@@ -316,6 +326,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             displayInventory(); // Initial display of the inventory
         });
+
+        function validateFileSize(input) {
+            if (input.files && input.files[0]) {
+                if (input.files[0].size > 10 * 1024 * 1024) { // 10MB
+                    alert('File too large! Please select an image less than 10MB.');
+                    input.value = '';
+                }
+            }
+        }
     </script>
 </body>
 </html>
