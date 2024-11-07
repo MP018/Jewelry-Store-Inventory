@@ -23,10 +23,10 @@ app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
+# Alternative 2: Using ssl with different verify mode
 app.config['MYSQL_SSL'] = {
     'ca': ca_path,
-    'check_hostname': False,
-    'verify_mode': ssl.CERT_NONE  # Less secure but will work for development
+    'verify_mode': ssl.CERT_REQUIRED
 }
 
 # File upload configuration
