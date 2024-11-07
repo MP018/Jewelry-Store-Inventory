@@ -250,7 +250,7 @@
                     <td>${{ item.Price }}</td>
                     <td>{{ item.Quantity }}</td>
                     <td>{{ item.Description or 'N/A' }}</td>
-                    <td><img src="{{ url_for('static', filename='images/' ~ item.Picture) }}" alt="{{ item.Name }} Image" width="100"></td>
+                    <td><img src="{{ item.Picture }}" alt="{{ item.Name }}" onerror="this.src='/static/images/default.jpg'"></td>
                     <td><button class="remove" onclick="removeItem('{{ item.SKU }}')">Remove</button></td>
                 </tr>
                 {% endfor %}
@@ -283,7 +283,7 @@
                     <td>$${item.Price}</td>
                     <td>${item.Quantity}</td>
                     <td>${item.Description || 'N/A'}</td>
-                    <td><img src="${staticUrl('images/' + item.Picture)}" alt="${item.Name} Image" width="100"></td>
+                    <td><img src="${item.Picture}" alt="${item.Name}" onerror="this.src='/static/images/default.jpg'"></td>
                     <td><button class="remove" onclick="removeItem('${item.SKU}')">Remove</button></td>
                 `;
                 tbody.appendChild(row);

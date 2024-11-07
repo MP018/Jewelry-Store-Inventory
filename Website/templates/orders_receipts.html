@@ -30,12 +30,30 @@
         }
         .item {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             margin-bottom: 10px;
+            gap: 10px;
+        }
+        .item span {
+            flex: 0 0 60px;
+            text-align: left;
+        }
+        .item input {
+            flex: 0 0 120px;
+            margin: 0;
+            width: 120px;
+        }
+        .item button {
+            flex: 0 0 100px;
+            width: auto;
+            margin: 0;
+            padding: 8px 15px;
+            background-color: #dc3545;
+            margin-left: auto;
         }
         .totals div {
             font-size: 18px;
@@ -43,20 +61,23 @@
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
+            background-color: rgba(0,0,0,0.5);
         }
         .modal-content {
-            background-color: white;
+            background-color: #fefefe;
+            margin: 15% auto;
             padding: 20px;
-            border-radius: 8px;
-            width: 300px;
-            text-align: center;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 1001;
         }
         .modal-content input, .modal-content button {
             margin-top: 10px;
@@ -222,6 +243,89 @@
             background-color: #57574f;
         }
         
+        .selections-display {
+            margin: 20px;
+            padding: 15px;
+            background-color: #fff5d7;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .selections-display p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .selections-display span {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-left: 10px;
+        }
+        
+        .orders-table-section {
+            margin-top: 40px;
+            background-color: #fff5d7;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff5d7;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        .orders-table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .orders-table tr:hover {
+            background-color: #f5e6c0;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .save-order-btn {
+            background-color: #4CAF50;  /* Green color */
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .save-order-btn:hover {
+            background-color: #45a049;  /* Darker green on hover */
+        }
+        
     </style>
 </head>
 <body>
@@ -247,6 +351,15 @@
         <button onclick="openModal('employeeModal')">+ Add Employee</button>
     </div>
 
+    <!-- Add selections display here -->
+    <div class="selections-display">
+        <p>Selected Employee: <span id="selectedEmployeeName">None</span></p>
+        <p>Selected Customer: <span id="selectedCustomerName">None</span></p>
+    </div>
+
+    <!-- Add save order button -->
+    <button onclick="saveOrder()" class="save-order-btn">Save Order</button>
+
     <!-- Items Section -->
     <div id="itemsContainer">
         <div class="item" id="item1">
@@ -265,47 +378,148 @@
         <div>Tax (7%): $<span id="tax">7.00</span></div>
         <div>Total: $<span id="total">107.00</span></div>
     </div>
+
+    <!-- Add the orders table section here -->
+    <div class="orders-table-section">
+        <h2>Recent Orders</h2>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Employee</th>
+                    <th>Subtotal</th>
+                    <th>Tax</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.Order_Number }}</td>
+                    <td>{{ order.Customer_First_Name }} {{ order.Customer_Last_Name }}</td>
+                    <td>{{ order.Employee_First_Name }} {{ order.Employee_Last_Name }}</td>
+                    <td>${{ "%.2f"|format(order.Subtotal) }}</td>
+                    <td>${{ "%.2f"|format(order.Tax) }}</td>
+                    <td>${{ "%.2f"|format(order.Total) }}</td>
+                    <td>
+                        <button onclick="deleteOrder({{ order.Order_Number }})" class="delete-btn">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Customer Modal -->
 <div class="modal" id="customerModal">
     <div class="modal-content">
-        <h2>Add Customer</h2>
+        <h2>Select Customer</h2>
         <select id="existingCustomer">
-            <option value="">Select Existing Customer</option>
+            <option value="">Select Customer</option>
             {% for customer in customers %}
                 <option value="{{ customer.Customer_ID }}">
                     {{ customer.First_Name }} {{ customer.Last_Name }}
                 </option>
             {% endfor %}
         </select>
-        <input type="text" id="customerName" placeholder="Or Add New Customer">
-        <button onclick="addCustomer()">Add Customer</button>
-        <button onclick="closeModal('customerModal')">Cancel</button>
+        <button onclick="selectCustomer()" class="confirm-btn">Confirm Selection</button>
+        <button onclick="closeModal('customerModal')" class="cancel-btn">Cancel</button>
     </div>
 </div>
 
 <!-- Employee Modal -->
 <div class="modal" id="employeeModal">
     <div class="modal-content">
-        <h2>Add Employee</h2>
+        <h2>Select Employee</h2>
         <select id="existingEmployee">
-            <option value="">Select Existing Employee</option>
+            <option value="">Select Employee</option>
             {% for employee in employees %}
                 <option value="{{ employee.Employee_ID }}">
                     {{ employee.First_Name }} {{ employee.Last_Name }}
                 </option>
             {% endfor %}
         </select>
-        <input type="text" id="employeeName" placeholder="Or Add New Employee">
-        <button onclick="addEmployee()">Add Employee</button>
-        <button onclick="closeModal('employeeModal')">Cancel</button>
+        <button onclick="selectEmployee()" class="confirm-btn">Confirm Selection</button>
+        <button onclick="closeModal('employeeModal')" class="cancel-btn">Cancel</button>
     </div>
 </div>
+
+<style>
+.confirm-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+    font-size: 16px;
+}
+
+.confirm-btn:hover {
+    background-color: #45a049;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+    font-size: 16px;
+}
+
+.cancel-btn:hover {
+    background-color: #da190b;
+}
+
+select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.selections-display {
+    margin: 20px;
+    padding: 15px;
+    background-color: #fff5d7;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.selections-display p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.selections-display span {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+/* Ensure main content is properly positioned */
+.main-content {
+    margin-left: 250px; /* Match your sidebar width */
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+</style>
 
 <script>
     let itemCount = 1;
     let taxRate = 0.07;
+    let selectedCustomerId = null;
+    let selectedEmployeeId = null;
 
     // Open modal
     function openModal(modalId) {
@@ -361,7 +575,6 @@
         const existingCustomer = document.getElementById("existingCustomer").value;
         
         if (existingCustomer) {
-            // Use existing customer
             selectedCustomerId = existingCustomer;
             closeModal('customerModal');
         } else if (customerName) {
@@ -393,41 +606,106 @@
         }
     }
 
-    // Add employee and display
-    async function addEmployee() {
-        // Similar to addCustomer function
-        const employeeName = document.getElementById("employeeName").value;
-        const existingEmployee = document.getElementById("existingEmployee").value;
+    // Simplify the employee selection function
+    function selectEmployee() {
+        const select = document.getElementById("existingEmployee");
+        const selectedOption = select.options[select.selectedIndex];
         
-        if (existingEmployee) {
-            selectedEmployeeId = existingEmployee;
+        if (select.value) {
+            selectedEmployeeId = select.value;
+            // Update some element to show the selected employee name
+            document.getElementById("selectedEmployeeName").textContent = selectedOption.text;
             closeModal('employeeModal');
-        } else if (employeeName) {
-            try {
-                const response = await fetch("{{ url_for('orders_receipts') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        'action': 'add_employee',
-                        'employeeName': employeeName
-                    })
-                });
-                
+        } else {
+            alert("Please select an employee");
+        }
+    }
+
+    // Add new saveOrder function
+    async function saveOrder() {
+        if (!selectedCustomerId || !selectedEmployeeId) {
+            alert("Please select both a customer and an employee before saving the order.");
+            return;
+        }
+
+        const orderData = {
+            customer_id: selectedCustomerId,
+            employee_id: selectedEmployeeId,
+            subtotal: parseFloat(document.getElementById("subtotal").textContent),
+            tax: parseFloat(document.getElementById("tax").textContent),
+            total: parseFloat(document.getElementById("total").textContent)
+        };
+
+        try {
+            const response = await fetch("{{ url_for('orders_receipts') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'save_order',
+                    order: orderData
+                })
+            });
+            
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
                 const result = await response.json();
                 if (result.success) {
-                    alert(result.message);
-                    closeModal('employeeModal');
-                    location.reload(); // Refresh to update employee list
+                    alert("Order saved successfully!");
+                    location.reload(); // Refresh the page
                 } else {
                     alert('Error: ' + result.error);
                 }
-            } catch (error) {
-                alert('Error adding employee: ' + error);
+            } else {
+                alert('Error: Server returned an invalid response');
             }
+        } catch (error) {
+            alert('Error saving order: ' + error);
+        }
+    }
+
+    // Update these functions to show the selected name and close the modal
+    function selectCustomer() {
+        const select = document.getElementById("existingCustomer");
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (select.value) {
+            selectedCustomerId = select.value;
+            // Update some element to show the selected customer name
+            document.getElementById("selectedCustomerName").textContent = selectedOption.text;
+            closeModal('customerModal');
         } else {
-            alert("Please select an employee or enter a new employee name.");
+            alert("Please select a customer");
+        }
+    }
+
+    async function deleteOrder(orderNumber) {
+        if (!confirm(`Are you sure you want to delete Order #${orderNumber}?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch("{{ url_for('orders_receipts') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'delete_order',
+                    order_number: orderNumber
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                alert('Order deleted successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error deleting order: ' + error);
         }
     }
 </script>

@@ -7,6 +7,8 @@ import io
 import os
 from werkzeug.utils import secure_filename
 import ssl
+import mysql.connector
+import base64
 
 app = Flask(__name__)
 
@@ -15,7 +17,7 @@ app.secret_key = ':)'
 
 # Get the absolute path to the ca.pem file
 current_dir = os.path.dirname(os.path.abspath(__file__))
-ca_path = os.path.join(os.path.dirname(current_dir), 'Backend', 'ca.pem')
+ca_path = os.path.join(current_dir, 'Backend', 'ca.pem')
 
 # Database configuration with SSL
 app.config['MYSQL_HOST'] = 'palacejewelers-palacejewelers.j.aivencloud.com'
@@ -23,10 +25,10 @@ app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
-# Alternative 2: Using ssl with different verify mode
 app.config['MYSQL_SSL'] = {
     'ca': ca_path,
-    'verify_mode': ssl.CERT_REQUIRED
+    'check_hostname': False,
+    'verify_mode': ssl.CERT_NONE
 }
 
 # File upload configuration
@@ -112,9 +114,16 @@ def customer_profile():
                 mysql.connection.commit()
         
         elif action == 'remove':
-            customer_id = request.form['customer_id']
-            cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
-            mysql.connection.commit()
+            try:
+                customer_id = request.form['customer_id']
+                # First delete associated notes
+                cursor.execute('DELETE FROM NOTES WHERE customer_id = %s', (customer_id,))
+                # Then delete the customer
+                cursor.execute('DELETE FROM CUSTOMER WHERE Customer_ID = %s', (customer_id,))
+                mysql.connection.commit()
+            except Exception as e:
+                print(f"Error deleting customer: {e}")
+                mysql.connection.rollback()
 
         elif action == 'select':
             customer_id = request.form['customer_id']
@@ -132,48 +141,50 @@ def customer_profile():
 def inventory():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        sku = request.form['sku']
-        item_name = request.form['item_name']
-        price = request.form['price']
-        quantity = request.form['quantity']
-        material = request.form['material']
-        gemstone = request.form['gemstone']
-        weight = request.form['weight']
-        description = request.form['description']
-        picture = request.files['picture']
-
-        if picture and allowed_file(picture.filename):
-            filename = secure_filename(picture.filename)
-            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            picture.save(picture_path)
         
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute(
-                'INSERT INTO ITEM (SKU, Picture, Price, Name, Quantity) VALUES (%s, %s, %s, %s, %s)',
-                (sku, filename, price, item_name, quantity)
-            )
-            cursor.execute(
-                'INSERT INTO ITEM_TAGS (SKU, Material, Gemstone, Weight, Description) VALUES (%s, %s, %s, %s, %s)',
-                (sku, material, gemstone, weight, description)
-            )
-            mysql.connection.commit()
-            cursor.close()
-
-        return redirect(url_for('inventory'))
-
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('''
-        SELECT ITEM.SKU, ITEM.Picture, ITEM.Price, ITEM.Name, ITEM.Quantity, 
-               ITEM_TAGS.Material, ITEM_TAGS.Gemstone, ITEM_TAGS.Weight, ITEM_TAGS.Description 
-        FROM ITEM 
-        LEFT JOIN ITEM_TAGS ON ITEM.SKU = ITEM_TAGS.SKU
-    ''')
-    items = cursor.fetchall()
-    cursor.close()
-
-    return render_template('inventory.html', items=items)
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Join ITEM and ITEM_TAGS tables
+        cursor.execute('''
+            SELECT i.SKU, i.Picture, i.Price, i.Name, i.Quantity, i.Sold_Date,
+                   t.Tag, t.Material, t.Gemstone, t.Weight, t.Description
+            FROM ITEM i
+            LEFT JOIN ITEM_TAGS t ON i.SKU = t.SKU
+        ''')
+        
+        items = cursor.fetchall()
+        
+        # Process each item
+        for item in items:
+            # Handle Picture data
+            if item['Picture'] is not None:
+                try:
+                    # If Picture is stored as a path
+                    if isinstance(item['Picture'], str):
+                        item['Picture'] = item['Picture']
+                    # If Picture is stored as bytes
+                    else:
+                        import base64
+                        item['Picture'] = f"data:image/jpeg;base64,{base64.b64encode(item['Picture']).decode('utf-8')}"
+                except Exception as e:
+                    print(f"Error processing image for SKU {item['SKU']}: {e}")
+                    item['Picture'] = None
+            
+            # Convert decimal to float for JSON serialization
+            if item['Price']:
+                item['Price'] = float(item['Price'])
+                
+            # Format datetime for display
+            if item['Sold_Date']:
+                item['Sold_Date'] = item['Sold_Date'].strftime('%Y-%m-%d %H:%M:%S')
+        
+        cursor.close()
+        return render_template('inventory.html', items=items)
+        
+    except Exception as e:
+        print(f"Error in inventory: {e}")
+        return str(e), 500
 
 # Get image route
 @app.route('/inventory/image/<sku>', methods=['GET'])
@@ -351,85 +362,73 @@ def orders_receipts():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
 
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    
-    if request.method == 'POST':
-        try:
-            action = request.form.get('action')
-            
-            if action == 'add_customer':
-                customer_name = request.form.get('customerName')
-                # Split customer name into first and last name
-                first_name, last_name = customer_name.split(' ', 1) if ' ' in customer_name else (customer_name, '')
-                cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name) VALUES (%s, %s)', 
-                             (first_name, last_name))
-                mysql.connection.commit()
-                return jsonify({'success': True, 'message': 'Customer added successfully'})
-            
-            elif action == 'add_employee':
-                employee_name = request.form.get('employeeName')
-                # Split employee name into first and last name
-                first_name, last_name = employee_name.split(' ', 1) if ' ' in employee_name else (employee_name, '')
-                cursor.execute('INSERT INTO EMPLOYEE (First_Name, Last_Name) VALUES (%s, %s)', 
-                             (first_name, last_name))
-                mysql.connection.commit()
-                return jsonify({'success': True, 'message': 'Employee added successfully'})
-            
-            elif action == 'create_order':
-                # Get order details from form
-                order_data = {
-                    'subtotal': request.form.get('subtotal'),
-                    'tax': request.form.get('tax'),
-                    'total': request.form.get('total'),
-                    'customer_id': request.form.get('customer_id'),
-                    'employee_id': request.form.get('employee_id')
-                }
-                
-                # Insert order into database
-                cursor.execute('''
-                    INSERT INTO ORDERS (Customer_ID, Employee_ID, Subtotal, Tax, Total) 
-                    VALUES (%s, %s, %s, %s, %s)
-                ''', (order_data['customer_id'], order_data['employee_id'], 
-                     order_data['subtotal'], order_data['tax'], order_data['total']))
-                
-                mysql.connection.commit()
-                return jsonify({'success': True, 'message': 'Order created successfully'})
-                
-        except Exception as e:
-            return jsonify({'success': False, 'error': str(e)})
-        finally:
-            cursor.close()
-    
-    # GET request - fetch existing orders
     try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        if request.method == 'POST':
+            if request.is_json:
+                data = request.get_json()
+                
+                if data.get('action') == 'delete_order':
+                    order_number = data.get('order_number')
+                    cursor.execute('DELETE FROM `ORDER` WHERE Order_Number = %s', (order_number,))
+                    mysql.connection.commit()
+                    return jsonify({'success': True, 'message': 'Order deleted successfully'})
+                
+                elif data.get('action') == 'save_order':
+                    order_data = data.get('order')
+                    
+                    # Generate a new order number
+                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM `ORDER`')
+                    result = cursor.fetchone()
+                    next_order_number = 1
+                    if result['max_order']:
+                        next_order_number = result['max_order'] + 1
+                    
+                    # Insert the order
+                    cursor.execute('''
+                        INSERT INTO `ORDER` (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    ''', (
+                        next_order_number,
+                        order_data['customer_id'],
+                        order_data['employee_id'],
+                        order_data['subtotal'],
+                        order_data['tax'],
+                        order_data['total']
+                    ))
+                    mysql.connection.commit()
+                    return jsonify({'success': True, 'message': 'Order saved successfully'})
+
+        # Fetch all orders with customer and employee names
         cursor.execute('''
-            SELECT o.Order_ID, o.Order_Date, o.Subtotal, o.Tax, o.Total,
-                   c.First_Name as Customer_First_Name, c.Last_Name as Customer_Last_Name,
-                   e.First_Name as Employee_First_Name, e.Last_Name as Employee_Last_Name
-            FROM ORDERS o
-            LEFT JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
-            LEFT JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
-            ORDER BY o.Order_Date DESC
+            SELECT o.*, 
+                   c.First_Name as Customer_First_Name, 
+                   c.Last_Name as Customer_Last_Name,
+                   e.First_Name as Employee_First_Name, 
+                   e.Last_Name as Employee_Last_Name
+            FROM `ORDER` o
+            JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
+            JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
+            ORDER BY o.Order_Number DESC
         ''')
         orders = cursor.fetchall()
         
-        # Fetch all customers and employees for the dropdowns
-        cursor.execute('SELECT Customer_ID, First_Name, Last_Name FROM CUSTOMER')
-        customers = cursor.fetchall()
-        
+        # Fetch employees and customers for the dropdowns
         cursor.execute('SELECT Employee_ID, First_Name, Last_Name FROM EMPLOYEE')
         employees = cursor.fetchall()
         
+        cursor.execute('SELECT Customer_ID, First_Name, Last_Name FROM CUSTOMER')
+        customers = cursor.fetchall()
+        
         return render_template('orders_receipts.html', 
                              orders=orders,
-                             customers=customers,
-                             employees=employees)
-    
+                             employees=employees,
+                             customers=customers)
+                             
     except Exception as e:
-        flash(f'Error: {str(e)}', 'error')
-        return render_template('orders_receipts.html')
-    finally:
-        cursor.close()
+        print(f"Error in orders_receipts: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
