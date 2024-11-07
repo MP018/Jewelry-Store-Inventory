@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Receipts</title>
-    <<style>
+    <style>
      
         .container {
             width: 80%;
             margin: auto;
             padding: 20px;
-            background-color: white;
+            background-color: #fff5d7;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
@@ -88,7 +88,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #dc3545;
             color: white;
             border: none;
             cursor: pointer;
@@ -239,155 +239,198 @@
         <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
     </div>
 
-    <div class="container">
-        <div class="header">
-            <button onclick="openModal('customerModal')">+ Add Customer</button>
-            <h1>Order #: <span id="orderNumber">001</span></h1>
-            <button onclick="openModal('employeeModal')">+ Add Employee</button>
-        </div>
-
-        <div id="itemsContainer">
-            <div class="item" id="item1">
-                <span>Item #1</span>
-                <input type="number" value="100.00" step="0.01" class="item-price" onchange="calculateTotals()" />
-                <button onclick="removeItem('item1')">Remove</button>
-            </div>
-        </div>
-
-        <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
-
-        <!-- Totals Section -->
-        <div class="totals">
-            <div>Subtotal: $<span id="subtotal">100.00</span></div>
-            <div>Tax (7%): $<span id="tax">7.00</span></div>
-            <div>Total: $<span id="total">107.00</span></div>
-        </div>
-
-        <!-- New Form Fields -->
-        <form id="orderForm">
-            <input type="hidden" id="orderNumberInput" value="001" />
-            <label for="customerID">Customer ID:</label>
-            <input type="number" id="customerID" placeholder="Enter Customer ID" required />
-            <label for="employeeID">Employee ID:</label>
-            <input type="number" id="employeeID" placeholder="Enter Employee ID" required />
-            <input type="hidden" id="subtotalInput" value="100.00" />
-            <input type="hidden" id="taxInput" value="7.00" />
-            <input type="hidden" id="totalInput" value="107.00" />
-            <button type="submit" onclick="submitOrder(event)">Submit Order</button>
-        </form>
+<div class="container">
+    <!-- Header for adding customers and employees -->
+    <div class="header">
+        <button onclick="openModal('customerModal')">+ Add Customer</button>
+        <h1>Order #: <span id="orderNumber">001</span></h1>
+        <button onclick="openModal('employeeModal')">+ Add Employee</button>
     </div>
 
-    <!-- Customer Modal -->
-    <div class="modal" id="customerModal">
-        <div class="modal-content">
-            <h2>Add Customer</h2>
-            <input type="text" id="customerName" placeholder="Customer Name" />
-            <button onclick="addCustomer()">Add Customer</button>
-            <button onclick="closeModal('customerModal')">Cancel</button>
+    <!-- Items Section -->
+    <div id="itemsContainer">
+        <div class="item" id="item1">
+            <span>Item #1</span>
+            <input type="number" value="100.00" step="0.01" class="item-price" onchange="calculateTotals()" />
+            <button onclick="removeItem('item1')">Remove</button>
         </div>
     </div>
 
-    <!-- Employee Modal -->
-    <div class="modal" id="employeeModal">
-        <div class="modal-content">
-            <h2>Add Employee</h2>
-            <input type="text" id="employeeName" placeholder="Employee Name" />
-            <button onclick="addEmployee()">Add Employee</button>
-            <button onclick="closeModal('employeeModal')">Cancel</button>
-        </div>
+    <!-- Add Item Button -->
+    <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+
+    <!-- Totals Section -->
+    <div class="totals">
+        <div>Subtotal: $<span id="subtotal">100.00</span></div>
+        <div>Tax (7%): $<span id="tax">7.00</span></div>
+        <div>Total: $<span id="total">107.00</span></div>
     </div>
+</div>
 
-    <script>
-        let itemCount = 1;
-        let taxRate = 0.07;
+<!-- Customer Modal -->
+<div class="modal" id="customerModal">
+    <div class="modal-content">
+        <h2>Add Customer</h2>
+        <select id="existingCustomer">
+            <option value="">Select Existing Customer</option>
+            {% for customer in customers %}
+                <option value="{{ customer.Customer_ID }}">
+                    {{ customer.First_Name }} {{ customer.Last_Name }}
+                </option>
+            {% endfor %}
+        </select>
+        <input type="text" id="customerName" placeholder="Or Add New Customer">
+        <button onclick="addCustomer()">Add Customer</button>
+        <button onclick="closeModal('customerModal')">Cancel</button>
+    </div>
+</div>
 
-        // Open modal
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "flex";
-        }
+<!-- Employee Modal -->
+<div class="modal" id="employeeModal">
+    <div class="modal-content">
+        <h2>Add Employee</h2>
+        <select id="existingEmployee">
+            <option value="">Select Existing Employee</option>
+            {% for employee in employees %}
+                <option value="{{ employee.Employee_ID }}">
+                    {{ employee.First_Name }} {{ employee.Last_Name }}
+                </option>
+            {% endfor %}
+        </select>
+        <input type="text" id="employeeName" placeholder="Or Add New Employee">
+        <button onclick="addEmployee()">Add Employee</button>
+        <button onclick="closeModal('employeeModal')">Cancel</button>
+    </div>
+</div>
 
-        // Close modal
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-        }
+<script>
+    let itemCount = 1;
+    let taxRate = 0.07;
 
-        // Add a new item function
-        function addItem() {
-            itemCount++;
-            const itemsContainer = document.getElementById("itemsContainer");
-            const itemDiv = document.createElement("div");
-            itemDiv.className = "item";
-            itemDiv.id = "item" + itemCount;
-            itemDiv.innerHTML = `
-                <span>Item #${itemCount}</span>
-                <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" />
-                <button onclick="removeItem('item${itemCount}')">Remove</button>
-            `;
-            itemsContainer.appendChild(itemDiv);
-            calculateTotals();
-        }
+    // Open modal
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = "flex";
+    }
 
-        // Remove item function
-        function removeItem(itemId) {
-            const item = document.getElementById(itemId);
-            item.remove();
-            calculateTotals();
-        }
+    // Close modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+    }
 
-        // Calculate totals
-        function calculateTotals() {
-            const prices = document.querySelectorAll('.item-price');
-            let subtotal = 0;
-            prices.forEach(price => {
-                subtotal += parseFloat(price.value) || 0;
-            });
-            const tax = subtotal * taxRate;
-            const total = subtotal + tax;
+    // Add a new item function
+    function addItem() {
+        itemCount++;
+        const itemsContainer = document.getElementById("itemsContainer");
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "item";
+        itemDiv.id = "item" + itemCount;
+        itemDiv.innerHTML = `
+            <span>Item #${itemCount}</span>
+            <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" />
+            <button onclick="removeItem('item${itemCount}')">Remove</button>
+        `;
+        itemsContainer.appendChild(itemDiv);
+        calculateTotals();
+    }
 
-            document.getElementById("subtotal").textContent = subtotal.toFixed(2);
-            document.getElementById("tax").textContent = tax.toFixed(2);
-            document.getElementById("total").textContent = total.toFixed(2);
+    // Remove item function
+    function removeItem(itemId) {
+        const item = document.getElementById(itemId);
+        item.remove();
+        calculateTotals();
+    }
 
-            // Update hidden input values for subtotal, tax, and total
-            document.getElementById("subtotalInput").value = subtotal.toFixed(2);
-            document.getElementById("taxInput").value = tax.toFixed(2);
-            document.getElementById("totalInput").value = total.toFixed(2);
-        }
+    // Calculate totals
+    function calculateTotals() {
+        const prices = document.querySelectorAll('.item-price');
+        let subtotal = 0;
+        prices.forEach(price => {
+            subtotal += parseFloat(price.value) || 0;
+        });
+        const tax = subtotal * taxRate;
+        const total = subtotal + tax;
 
-        // Submit Order function
-        function submitOrder(event) {
-            event.preventDefault();
-            const customerID = document.getElementById("customerID").value;
-            const employeeID = document.getElementById("employeeID").value;
-            const subtotal = document.getElementById("subtotalInput").value;
-            const tax = document.getElementById("taxInput").value;
-            const total = document.getElementById("totalInput").value;
+        document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+        document.getElementById("tax").textContent = tax.toFixed(2);
+        document.getElementById("total").textContent = total.toFixed(2);
+    }
 
-            // Here you would typically send the data to your server
-            alert(`Order submitted with:\nCustomer ID: ${customerID}\nEmployee ID: ${employeeID}\nSubtotal: $${subtotal}\nTax: $${tax}\nTotal: $${total}`);
-        }
-
-        // Add customer and display
-        function addCustomer() {
-            const customerName = document.getElementById("customerName").value;
-            if (customerName) {
-                alert(`Customer ${customerName} added successfully!`);
-                closeModal('customerModal');
-            } else {
-                alert("Please enter a customer name.");
+    // Add customer and display
+    async function addCustomer() {
+        const customerName = document.getElementById("customerName").value;
+        const existingCustomer = document.getElementById("existingCustomer").value;
+        
+        if (existingCustomer) {
+            // Use existing customer
+            selectedCustomerId = existingCustomer;
+            closeModal('customerModal');
+        } else if (customerName) {
+            try {
+                const response = await fetch("{{ url_for('orders_receipts') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'action': 'add_customer',
+                        'customerName': customerName
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    closeModal('customerModal');
+                    location.reload(); // Refresh to update customer list
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error adding customer: ' + error);
             }
+        } else {
+            alert("Please select a customer or enter a new customer name.");
         }
+    }
 
-        // Add employee and display
-        function addEmployee() {
-            const employeeName = document.getElementById("employeeName").value;
-            if (employeeName) {
-                alert(`Employee ${employeeName} added successfully!`);
-                closeModal('employeeModal');
-            } else {
-                alert("Please enter an employee name.");
+    // Add employee and display
+    async function addEmployee() {
+        // Similar to addCustomer function
+        const employeeName = document.getElementById("employeeName").value;
+        const existingEmployee = document.getElementById("existingEmployee").value;
+        
+        if (existingEmployee) {
+            selectedEmployeeId = existingEmployee;
+            closeModal('employeeModal');
+        } else if (employeeName) {
+            try {
+                const response = await fetch("{{ url_for('orders_receipts') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'action': 'add_employee',
+                        'employeeName': employeeName
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    closeModal('employeeModal');
+                    location.reload(); // Refresh to update employee list
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error adding employee: ' + error);
             }
+        } else {
+            alert("Please select an employee or enter a new employee name.");
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>

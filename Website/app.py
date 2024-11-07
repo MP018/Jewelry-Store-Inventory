@@ -336,10 +336,90 @@ def get_repair_item_image(repair_item_id):
     else:
         return '', 404
     
-@app.route('/orders_receipts')
+@app.route('/orders_receipts', methods=['GET', 'POST'])
 def orders_receipts():
-    # Add the logic for orders and receipts page here
-    return render_template('orders_receipts.html')
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    
+    if request.method == 'POST':
+        try:
+            action = request.form.get('action')
+            
+            if action == 'add_customer':
+                customer_name = request.form.get('customerName')
+                # Split customer name into first and last name
+                first_name, last_name = customer_name.split(' ', 1) if ' ' in customer_name else (customer_name, '')
+                cursor.execute('INSERT INTO CUSTOMER (First_Name, Last_Name) VALUES (%s, %s)', 
+                             (first_name, last_name))
+                mysql.connection.commit()
+                return jsonify({'success': True, 'message': 'Customer added successfully'})
+            
+            elif action == 'add_employee':
+                employee_name = request.form.get('employeeName')
+                # Split employee name into first and last name
+                first_name, last_name = employee_name.split(' ', 1) if ' ' in employee_name else (employee_name, '')
+                cursor.execute('INSERT INTO EMPLOYEE (First_Name, Last_Name) VALUES (%s, %s)', 
+                             (first_name, last_name))
+                mysql.connection.commit()
+                return jsonify({'success': True, 'message': 'Employee added successfully'})
+            
+            elif action == 'create_order':
+                # Get order details from form
+                order_data = {
+                    'subtotal': request.form.get('subtotal'),
+                    'tax': request.form.get('tax'),
+                    'total': request.form.get('total'),
+                    'customer_id': request.form.get('customer_id'),
+                    'employee_id': request.form.get('employee_id')
+                }
+                
+                # Insert order into database
+                cursor.execute('''
+                    INSERT INTO ORDERS (Customer_ID, Employee_ID, Subtotal, Tax, Total) 
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (order_data['customer_id'], order_data['employee_id'], 
+                     order_data['subtotal'], order_data['tax'], order_data['total']))
+                
+                mysql.connection.commit()
+                return jsonify({'success': True, 'message': 'Order created successfully'})
+                
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)})
+        finally:
+            cursor.close()
+    
+    # GET request - fetch existing orders
+    try:
+        cursor.execute('''
+            SELECT o.Order_ID, o.Order_Date, o.Subtotal, o.Tax, o.Total,
+                   c.First_Name as Customer_First_Name, c.Last_Name as Customer_Last_Name,
+                   e.First_Name as Employee_First_Name, e.Last_Name as Employee_Last_Name
+            FROM ORDERS o
+            LEFT JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
+            LEFT JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
+            ORDER BY o.Order_Date DESC
+        ''')
+        orders = cursor.fetchall()
+        
+        # Fetch all customers and employees for the dropdowns
+        cursor.execute('SELECT Customer_ID, First_Name, Last_Name FROM CUSTOMER')
+        customers = cursor.fetchall()
+        
+        cursor.execute('SELECT Employee_ID, First_Name, Last_Name FROM EMPLOYEE')
+        employees = cursor.fetchall()
+        
+        return render_template('orders_receipts.html', 
+                             orders=orders,
+                             customers=customers,
+                             employees=employees)
+    
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return render_template('orders_receipts.html')
+    finally:
+        cursor.close()
 
 if __name__ == '__main__':
     app.run(debug=True)

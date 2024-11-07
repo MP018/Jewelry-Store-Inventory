@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Profile</title>
     <style>
+        /* Base styles from Frontend version */
         body {
             font-family: Arial, sans-serif;
-            background-color: #fff5d7;
+            background-color: #f5f5dc;
             margin: 0;
             padding: 0;
         }
+        
+        /* Navbar with moving text */
         .navbar {
             background-color: #333;
             color: white;
@@ -27,21 +30,11 @@
             white-space: nowrap;
         }
         @keyframes moveText {
-            0% {
-                left: -100%;
-            }
-            100% {
-                left: 100%;
-            }
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
+
+        /* Sidebar and button styles from Frontend */
         .sidebar {
             width: 200px;
             height: 100vh;
@@ -58,83 +51,29 @@
             text-decoration: none;
             font-size: 15px;
         }
-        .sidebar a:hover {
-            background-color: #ccc;
+        
+        /* Button styles */
+        .logout-btn, .profile-btn, .notes-btn, .inventory-button, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
+        
+        .logout-btn:hover, .profile-btn:hover, .notes-btn:hover, 
+        .inventory-button:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
+        }
+
+        /* Content area styles */
         .content {
             margin-left: 220px;
             padding: 20px;
         }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-btn:hover {
-            background-color: #57574f;
-        }
-        .notes-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .notes-btn:hover {
-            background-color: #57574f;
-        }
-        .inventory-button {
-            background-color: #000;
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .inventory-button:hover {
-            background-color: #57574f;
-        }
-        .repair-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .repair-btn:hover {
-            background-color: #57574f;
-        }
-        .orders-receipts {
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .orders-receipts:hover {
-            background-color: #57574f;
-        }
-        h1 {
-            text-align: center;
-        }
+
+        /* Table styles from Frontend */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -151,22 +90,14 @@
         td {
             background-color: #fff;
         }
-        .buttons {
-            display: flex;
-            justify-content: center;
+
+        /* Form styles from Frontend */
+        #add-user-form {
+            display: none;
             margin-top: 20px;
-        }
-        .buttons button {
-            background-color: #000;
-            color: #fff;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 0 10px;
-        }
-        .buttons button:hover {
-            background-color: #57574f;
+            background-color: #eae3d2;
+            padding: 20px;
+            border-radius: 10px;
         }
         .input-group {
             margin-bottom: 15px;
@@ -182,24 +113,37 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        #add-user-form {
-            margin-top: 20px;
-            background-color: #eae3d2;
-            padding: 20px;
-            border-radius: 10px;
-            display: none; /* Initially hidden */
+
+        /* Action buttons */
+        .action-button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .select-button {
+            background-color: #000;
+            color: white;
+        }
+        .remove-button {
+            background-color: #dc3545;
+            color: white;
+        }
+        .add-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-add-button {
+            background-color: #28a745;
+            color: white;
         }
     </style>
-    <script>
-        function toggleAddUserForm() {
-            var form = document.getElementById('add-user-form');
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-            } else {
-                form.style.display = 'none';
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="navbar">
@@ -219,7 +163,7 @@
     <div class="content">
         <h1>Customer Profile</h1>
 
-        <button onclick="toggleAddUserForm()">Add Customer</button>
+        <button class="add-button" onclick="toggleAddUserForm()">Add Customer</button>
 
         <div id="add-user-form">
             <h3>Add New Customer</h3>
@@ -240,7 +184,8 @@
                     <label for="phone-number">Phone Number:</label>
                     <input type="text" id="phone-number" name="Customer_Phone" required>
                 </div>
-                <button type="submit" name="action" value="add">Add Customer</button>
+                <button type="submit" name="action" value="add" class="action-button form-add-button">Add Customer</button>
+                <button type="button" onclick="toggleAddUserForm()" class="action-button remove-button">Cancel</button>
             </form>
         </div>
 
@@ -265,12 +210,12 @@
                         <form method="POST" style="display:inline;">
                             <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
                             <input type="hidden" name="action" value="select">
-                            <button type="submit">Select</button>
+                            <button type="submit" class="action-button select-button">Select</button>
                         </form>
                         <form method="POST" style="display:inline;">
                             <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
                             <input type="hidden" name="action" value="remove">
-                            <button type="submit" style="background-color: red; color: white;">Remove</button>
+                            <button type="submit" class="action-button remove-button">Remove</button>
                         </form>
                     </td>
                 </tr>
@@ -278,5 +223,12 @@
             </tbody>
         </table>
     </div>
+
+    <script>
+        function toggleAddUserForm() {
+            var form = document.getElementById('add-user-form');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>
