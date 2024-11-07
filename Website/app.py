@@ -12,12 +12,18 @@ app = Flask(__name__)
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = ':)'
 
-# Enter your database connection details below
+# Get the absolute path to the ca.pem file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+ca_path = os.path.join(os.path.dirname(current_dir), 'Backend', 'ca.pem')
+
+# Database configuration with SSL
 app.config['MYSQL_HOST'] = 'palacejewelers-palacejewelers.j.aivencloud.com'
 app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
+app.config['MYSQL_SSL_CA'] = ca_path  # Add SSL certificate path
+app.config['MYSQL_SSL_VERIFY_CERT'] = True  # Verify SSL certificate
 
 # File upload configuration
 UPLOAD_FOLDER = 'Website/static/images'
