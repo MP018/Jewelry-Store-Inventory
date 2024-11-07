@@ -6,6 +6,7 @@ import re
 import io
 import os
 from werkzeug.utils import secure_filename
+import ssl
 
 app = Flask(__name__)
 
@@ -22,8 +23,11 @@ app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
-app.config['MYSQL_SSL_CA'] = ca_path  # Add SSL certificate path
-app.config['MYSQL_SSL_VERIFY_CERT'] = True  # Verify SSL certificate
+app.config['MYSQL_SSL'] = {
+    'ca': ca_path,
+    'check_hostname': False,
+    'verify_mode': ssl.CERT_NONE  # Less secure but will work for development
+}
 
 # File upload configuration
 UPLOAD_FOLDER = 'Website/static/images'
