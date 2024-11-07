@@ -152,6 +152,18 @@
         .navbar h1 {
             font-size: 24px;
             margin: 0;
+            position: relative;
+            animation: moveText 8s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes moveText {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
         }
         .sidebar {
             width: 200px;

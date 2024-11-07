@@ -312,41 +312,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Registration route
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    msg = ''
-    if request.method == 'POST':
-        if 'name' in request.form and 'Employee_Password' in request.form and 'Employee_Email' in request.form and 'confirm_password' in request.form:
-            name = request.form['name']
-            firstName, lastName = name.split(" ", 1)
-            password = request.form['Employee_Password']
-            confirm_password = request.form['confirm_password']
-            email = request.form['Employee_Email']
-
-            if password != confirm_password:
-                msg = 'Passwords do not match!'
-                return render_template('registration.html', msg=msg)
-
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM EMPLOYEE WHERE Employee_Email = %s', (email,))
-            account = cursor.fetchone()
-
-            if account:
-                msg = 'Account already exists!'
-            elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-                msg = 'Invalid email address!'
-            elif not re.match(r'[A-Za-z0-9 ]+', name):
-                msg = 'Name must contain only characters and numbers!'
-            elif not name or not password or not email:
-                msg = 'Please fill out the form!'
-            else:
-                cursor.execute('INSERT INTO EMPLOYEE (First_Name, Last_Name, Employee_Email, Employee_Password) VALUES (%s, %s, %s, %s)', 
-                               (firstName, lastName, email, password))
-                mysql.connection.commit()
-                msg = 'You have successfully registered!'
-                return redirect(url_for('login'))
-    return render_template('registration.html', msg=msg)
 
 @app.route('/repair_items', methods=['GET', 'POST'])
 def repair_items():
