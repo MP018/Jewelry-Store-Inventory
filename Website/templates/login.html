@@ -106,12 +106,45 @@
             border-radius: 300%;
             animation: moveBack 1s ease-out forwards; /* Move back animation */
         }
+
+        .flash-message {
+            color: #28a745;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #d4edda;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome!</h1>
         <p>Log in to your account.</p>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if msg %}
+        <div class="error-message">
+            {{ msg }}
+        </div>
+        {% endif %}
+
         <form action="/" method="POST">
             <div class="input-group">
                 <label for="email">Email</label>

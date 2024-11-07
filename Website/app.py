@@ -309,7 +309,10 @@ def delete_note(title):
 # Logout route
 @app.route('/logout')
 def logout():
+    # Clear the session data
     session.clear()
+    # Redirect to login page with a message
+    flash('You have been successfully logged out.')
     return redirect(url_for('login'))
 
 
