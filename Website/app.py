@@ -25,25 +25,32 @@ app.config['MYSQL_USER'] = 'avnadmin'
 app.config['MYSQL_PASSWORD'] = 'AVNS_eTE1cr2Go3sTM_VZneL'
 app.config['MYSQL_DB'] = 'PalaceDatabase'
 app.config['MYSQL_PORT'] = 16246
+
+# Updated SSL configuration
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+ssl_context.load_verify_locations(ca_path)
+
+app.config['MYSQL_SSL_CA'] = ca_path
 app.config['MYSQL_SSL'] = {
     'ca': ca_path,
     'check_hostname': False,
-    'verify_mode': ssl.CERT_NONE
+    'verify_mode': ssl.CERT_NONE,
+    'ssl_context': ssl_context
 }
 
-# File upload configuration
-UPLOAD_FOLDER = 'Website/static/images'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Create upload folder if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-# Initialize MySQL
+# Initialize MySQL with the SSL context
 mysql = MySQL(app)
+
+# Create a function to get a new cursor with SSL
+def get_db_cursor():
+    try:
+        return mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    except Exception as e:
+        # If connection fails, try to reconnect
+        mysql.connection.ping(reconnect=True)
+        return mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -60,22 +67,27 @@ def allowed_file(filename):
 def login():
     msg = ''
     if request.method == 'POST' and 'Employee_Email' in request.form and 'Employee_Password' in request.form:
-        email = request.form['Employee_Email']
-        password = request.form['Employee_Password']
-        
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM EMPLOYEE WHERE Employee_Email = %s AND Employee_Password = %s', (email, password,))
-        account = cursor.fetchone()
+        try:
+            cursor = get_db_cursor()
+            email = request.form['Employee_Email']
+            password = request.form['Employee_Password']
+            
+            cursor.execute('SELECT * FROM EMPLOYEE WHERE Employee_Email = %s AND Employee_Password = %s', (email, password,))
+            account = cursor.fetchone()
+            cursor.close()
 
-        if account:
-            session['loggedin'] = True
-            session['Employee_ID'] = account['Employee_ID']
-            session['First_Name'] = account['First_Name']
-            session['Last_Name'] = account['Last_Name']
-            session['Employee_Email'] = account['Employee_Email']
-            return redirect(url_for('dashboard'))
-        else:
-            msg = 'Incorrect email/password!'
+            if account:
+                session['loggedin'] = True
+                session['Employee_ID'] = account['Employee_ID']
+                session['First_Name'] = account['First_Name']
+                session['Last_Name'] = account['Last_Name']
+                session['Employee_Email'] = account['Employee_Email']
+                return redirect(url_for('dashboard'))
+            else:
+                msg = 'Incorrect email/password!'
+        except Exception as e:
+            print(f"Login error: {e}")
+            msg = 'Database connection error. Please try again.'
 
     return render_template('login.html', msg=msg)
 
@@ -143,7 +155,7 @@ def inventory():
         return redirect(url_for('login'))
         
     try:
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor = get_db_cursor()
         
         # Handle POST request (adding new item)
         if request.method == 'POST':
