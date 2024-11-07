@@ -32,7 +32,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #000;
             color: white;
             border: none;
             cursor: pointer;
@@ -75,6 +75,25 @@
         .navbar h1 {
             font-size: 24px;
             margin: 0;
+            position: relative;
+            animation: moveText 8s linear infinite;
+            white-space: nowrap;
+        }
+        @keyframes moveText {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
         }
         .sidebar {
             width: 200px;
@@ -144,7 +163,7 @@
         .repair-btn{
             background-color: #000;
             color: white;
-            padding: 18px 38px;
+            padding: 18px 25px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -156,7 +175,7 @@
         .orders-receipts{
             background-color: #000;
             color: white;
-            padding: 18px 30px;
+            padding: 18px 18px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -172,7 +191,7 @@
     <!-- Navbar and Sidebar -->
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
     </div>
 
     <div class="sidebar">

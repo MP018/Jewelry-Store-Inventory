@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
+            background-color: #fff5d7;
             margin: 0;
             padding: 0;
         }
@@ -22,6 +22,17 @@
         .navbar h1 {
             font-size: 24px;
             margin: 0;
+            position: relative;
+            animation: moveText 8s linear infinite;
+            white-space: nowrap;
+        }
+        @keyframes moveText {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
         }
         .navbar a {
             color: white;
@@ -39,11 +50,13 @@
             padding-top: 20px;
         }
         .sidebar a {
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: black;
             padding: 15px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 15px;
         }
         .sidebar a:hover {
             background-color: #ccc;
@@ -52,7 +65,7 @@
             margin-left: 220px;
             padding: 20px;
         }
-        .logout-btn, .dashboard-btn, .profile-btn, .inventory-button, .notes-btn {
+        .logout-btn, .dashboard-btn, .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
             background-color: #000;
             color: white;
             padding: 10px 15px;
@@ -61,7 +74,7 @@
             cursor: pointer;
             width: 100%; /* Ensure buttons take full width */
         }
-        .logout-btn:hover, .dashboard-btn:hover, .profile-btn:hover, .inventory-button:hover, .notes-btn:hover {
+        .logout-btn:hover, .dashboard-btn:hover, .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
         .notes-section {

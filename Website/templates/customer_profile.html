@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
+            background-color: #fff5d7;
             margin: 0;
             padding: 0;
         }
@@ -21,8 +21,18 @@
         }
         .navbar h1 {
             font-size: 24px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            position: relative;
+            animation: moveText 8s linear infinite;
+            white-space: nowrap;
+        }
+        @keyframes moveText {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
         }
         .navbar a {
             color: white;
@@ -66,17 +76,60 @@
         .logout-btn:hover {
             background-color: #57574f;
         }
-        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+        .profile-btn {
             background-color: #000;
             color: white;
-            padding: 18px;
+            padding: 18px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .profile-btn:hover {
+            background-color: #57574f;
+        }
+        .notes-btn {
+            background-color: #000;
+            color: white;
+            padding: 18px 25px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 2px;
-            width: calc(100% - 30px); /* Adjust button width */
         }
-        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+        .notes-btn:hover {
+            background-color: #57574f;
+        }
+        .inventory-button {
+            background-color: #000;
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .inventory-button:hover {
+            background-color: #57574f;
+        }
+        .repair-btn {
+            background-color: #000;
+            color: white;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .repair-btn:hover {
+            background-color: #57574f;
+        }
+        .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .orders-receipts:hover {
             background-color: #57574f;
         }
         h1 {
