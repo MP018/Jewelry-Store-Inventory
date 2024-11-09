@@ -468,7 +468,7 @@ def orders_receipts():
                 
                 if data.get('action') == 'delete_order':
                     order_number = data.get('order_number')
-                    cursor.execute('DELETE FROM `ORDER` WHERE Order_Number = %s', (order_number,))
+                    cursor.execute('DELETE FROM ORDERS WHERE Order_Number = %s', (order_number,))
                     mysql.connection.commit()
                     return jsonify({'success': True, 'message': 'Order deleted successfully'})
                 
@@ -476,7 +476,7 @@ def orders_receipts():
                     order_data = data.get('order')
                     
                     # Generate a new order number
-                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM `ORDER`')
+                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM ORDERS')
                     result = cursor.fetchone()
                     next_order_number = 1
                     if result['max_order']:
@@ -484,7 +484,7 @@ def orders_receipts():
                     
                     # Insert the order
                     cursor.execute('''
-                        INSERT INTO `ORDER` (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
+                        INSERT INTO ORDERS (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
                         VALUES (%s, %s, %s, %s, %s, %s)
                     ''', (
                         next_order_number,
@@ -504,7 +504,7 @@ def orders_receipts():
                    c.Last_Name as Customer_Last_Name,
                    e.First_Name as Employee_First_Name, 
                    e.Last_Name as Employee_Last_Name
-            FROM `ORDER` o
+            FROM ORDERS o
             JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
             JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
             ORDER BY o.Order_Number DESC
