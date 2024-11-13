@@ -1,0 +1,24 @@
+# Environment variables
+.env
+
+# Python virtual environment
+venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# IDE files
+.vscode/
+.idea/
+
+# Uploaded images
+static/images/*
+!static/images/.gitkeep
+
+# SSL certificates
+Backend/ca.pem
+
+# Logs
+*.log 
