@@ -397,12 +397,13 @@
         <table class="orders-table">
             <thead>
                 <tr>
-                    <th>Order #</th>
-                    <th>Customer</th>
-                    <th>Employee</th>
+                    <th>Order Number</th>
+                    <th>Customer Name</th>
+                    <th>Employee Name</th>
                     <th>Subtotal</th>
                     <th>Tax</th>
                     <th>Total</th>
+                    <th>Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -410,11 +411,12 @@
                 {% for order in orders %}
                 <tr>
                     <td>{{ order.Order_Number }}</td>
-                    <td>{{ order.Customer_First_Name }} {{ order.Customer_Last_Name }}</td>
-                    <td>{{ order.Employee_First_Name }} {{ order.Employee_Last_Name }}</td>
+                    <td>{{ order.customer_first_name }} {{ order.customer_last_name }}</td>
+                    <td>{{ order.employee_first_name }} {{ order.employee_last_name }}</td>
                     <td>${{ "%.2f"|format(order.Subtotal) }}</td>
                     <td>${{ "%.2f"|format(order.Tax) }}</td>
                     <td>${{ "%.2f"|format(order.Total) }}</td>
+                    <td>{{ order.Sold_Date.strftime('%Y-%m-%d') if order.Sold_Date else '' }}</td>
                     <td>
                         <button onclick="deleteOrder({{ order.Order_Number }})" class="delete-btn">Delete</button>
                     </td>

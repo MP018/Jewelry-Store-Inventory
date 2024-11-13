@@ -207,18 +207,15 @@
         <h1>Manage Repair Items</h1>
         
         <!-- Form for adding a new repair item -->
-        <form id="repair-form" method="POST" enctype="multipart/form-data" action="{{ url_for('repair_items') }}">
+        <form id="repair-form" method="POST" action="{{ url_for('repair_items') }}" enctype="multipart/form-data">
             <input type="text" name="repair_order_number" id="repair-order-number" placeholder="Repair Order Number" required>
-            <input type="text" name="item_name" id="repair-name" placeholder="Jewelry Name" required>
-            <input type="text" name="condition" id="repair-condition" placeholder="Description (e.g., Broken, Scratched)" required>
-            <input type="date" 
-                   name="repair_date" 
-                   id="repair-date" 
-                   required>
-            <textarea name="notes" id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
-            <input type="file" name="picture" id="repair-image" accept="image/*" required>
-            <input type="number" name="customer_id" id="customer-id" placeholder="Customer ID" required>
-            <input type="number" name="employee_id" id="employee-id" placeholder="Employee ID" required>
+            <input type="text" name="item_name" placeholder="Item Name" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <input type="date" name="repair_date" id="repair-date" required>
+            <textarea name="repair_notes" placeholder="Repair Notes"></textarea>
+            <input type="file" name="image" accept="image/*">
+            <input type="text" name="customer_id" placeholder="Customer ID" required>
+            <input type="text" name="employee_id" placeholder="Employee ID" required>
             <input type="number" step="0.01" name="subtotal" id="subtotal" placeholder="Subtotal ($)" required>
             <input type="number" step="0.01" name="tax" id="tax" placeholder="Tax ($)" required>
             <input type="number" step="0.01" name="total" id="total" placeholder="Total ($)" required>
@@ -257,11 +254,7 @@
                     <td>{{ item.Repair_Notes }}</td>
                     <td>
                         {% if item.Image %}
-                            {% if item.Image|string %}
-                                <img src="{{ url_for('static', filename='images/' + item.Image|string) }}" alt="Repair Item Image">
-                            {% else %}
-                                No Image
-                            {% endif %}
+                            <img src="{{ item.Image }}" alt="Product Image">
                         {% else %}
                             No Image
                         {% endif %}

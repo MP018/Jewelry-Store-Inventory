@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify, send_from_directory
 from flask_mysqldb import MySQL
 import logging
 import MySQLdb.cursors
@@ -14,8 +14,12 @@ import threading
 import time
 import sys
 import traceback
+import hashlib
+from pathlib import Path
 
-app = Flask(__name__)
+app = Flask(__name__, 
+    static_url_path='/static',
+    static_folder='static')
 
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = ':)'
@@ -198,118 +202,142 @@ def customer_profile():
     customers = cursor.fetchall()
     return render_template('customer_profile.html', customers=customers)
 
-# Inventory route
+# Add this helper function to calculate file hash
+def get_file_hash(file_data):
+    """Calculate SHA-256 hash of file data"""
+    return hashlib.sha256(file_data).hexdigest()
+
+# Define the base directory for the project
+BASE_DIR = Path(__file__).resolve().parent
+
+def save_image(image_file):
+    """
+    Save image file and return filename. If image already exists, return existing filename.
+    """
+    if not image_file:
+        return None
+        
+    try:
+        # Secure the filename
+        original_filename = secure_filename(image_file.filename)
+        if not original_filename:
+            return None
+            
+        # Read file data and get hash
+        file_data = image_file.read()
+        file_hash = hashlib.sha256(file_data).hexdigest()[:12]
+        
+        # Get file extension
+        _, ext = os.path.splitext(original_filename)
+        
+        # Create new filename using hash
+        filename = f"{file_hash}{ext}"
+        
+        # Create full path using BASE_DIR
+        static_folder = os.path.join(BASE_DIR, 'static')
+        images_folder = os.path.join(static_folder, 'images')
+        file_path = os.path.join(images_folder, filename)
+        
+        # Ensure directories exist
+        os.makedirs(images_folder, exist_ok=True)
+        
+        # Save file if it doesn't exist
+        if not os.path.exists(file_path):
+            image_file.seek(0)  # Reset file pointer
+            image_file.save(file_path)
+            print(f"Saved image to: {file_path}")
+        else:
+            print(f"Image already exists at: {file_path}")
+            
+        return filename
+        
+    except Exception as e:
+        print(f"Error saving image: {e}")
+        return None
+
+# Update inventory route
 @app.route('/inventory', methods=['GET', 'POST'])
 def inventory():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
         
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            sku = request.form['sku']
+            name = request.form['item_name']
+            material = request.form['material']
+            gemstone = request.form['gemstone']
+            weight = request.form['weight']
+            price = request.form['price']
+            quantity = request.form['quantity']
+            description = request.form['description']
+            
+            # Start transaction
+            cursor.execute('START TRANSACTION')
+            
+            # Handle image upload first
+            filename = None
+            if 'picture' in request.files:
+                image = request.files['picture']
+                if image and image.filename:
+                    filename = save_image(image)
+                    print(f"Saved image filename: {filename}")
+            
+            # Insert into ITEM table
+            cursor.execute('''
+                INSERT INTO ITEM (SKU, Name, Price, Quantity, Picture, Sold)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (sku, name, price, quantity, filename, 0))
+            
+            # Insert into ITEM_TAGS table
+            cursor.execute('''
+                INSERT INTO ITEM_TAGS (SKU, Material, Gemstone, Weight, Description)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (sku, material, gemstone, weight, description))
+            
+            # Commit transaction
+            mysql.connection.commit()
+            print(f"Successfully added item with SKU {sku}")
+            flash('Item added successfully!')
+            return redirect(url_for('inventory'))
+            
+        except Exception as e:
+            mysql.connection.rollback()
+            print(f"Error adding inventory item: {e}")
+            flash(f'Error adding inventory item: {str(e)}')
+            return redirect(url_for('inventory'))
+    
+    # GET request handling
     try:
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        
-        # Handle POST request (adding new item)
-        if request.method == 'POST':
-            try:
-                # Get form data
-                sku = int(request.form['sku'])
-                name = request.form['item_name']
-                price = float(request.form['price'])
-                quantity = int(request.form['quantity'])
-                material = request.form['material']
-                gemstone = request.form['gemstone']
-                weight = int(request.form['weight'])
-                description = request.form['description']
-                
-                # Handle image upload with size check
-                picture = request.files['picture']
-                if picture:
-                    # Read the image
-                    picture_data = picture.read()
-                    # Check file size (10MB limit)
-                    if len(picture_data) > 10 * 1024 * 1024:  # 10MB in bytes
-                        flash('Image file is too large. Please upload an image smaller than 10MB.', 'error')
-                        return redirect(url_for('inventory'))
-                    
-                    # Save file to static/images directory
-                    filename = f"{sku}_{secure_filename(picture.filename)}"
-                    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    with open(picture_path, 'wb') as f:
-                        f.write(picture_data)
-                else:
-                    filename = None
-                
-                # First insert into ITEM table (parent table)
-                cursor.execute('''
-                    INSERT INTO `ITEM` (SKU, Picture, Price, Name, Quantity)
-                    VALUES (%s, %s, %s, %s, %s)
-                ''', (sku, filename, price, name, quantity))
-                
-                # Then insert into ITEM_TAGS table (child table)
-                cursor.execute('''
-                    INSERT INTO `ITEM_TAGS` (SKU, Material, Gemstone, Weight, Description)
-                    VALUES (%s, %s, %s, %s, %s)
-                ''', (sku, material, gemstone, weight, description))
-                
-                mysql.connection.commit()
-                flash('Item added successfully!', 'success')
-                
-            except Exception as e:
-                mysql.connection.rollback()
-                flash(f'Error adding item: {str(e)}', 'error')
-                print(f"Error adding item: {e}")
-        
-        # Fetch all items for display
         cursor.execute('''
-            SELECT 
-                i.SKU,
-                i.Picture,
-                i.Price,
-                i.Name,
-                i.Quantity,
-                i.Sold_Date,
-                t.Tag,
-                t.Material,
-                t.Gemstone,
-                t.Weight,
-                t.Description
-            FROM `ITEM` i
-            LEFT JOIN `ITEM_TAGS` t ON i.SKU = t.SKU
+            SELECT i.*, 
+                   t.Material,
+                   t.Gemstone,
+                   t.Weight,
+                   t.Description
+            FROM ITEM i
+            LEFT JOIN ITEM_TAGS t ON i.SKU = t.SKU
+            WHERE i.Sold = 0
         ''')
-        
         items = cursor.fetchall()
-        processed_items = []
         
+        # Process images for display - add debug prints
         for item in items:
-            processed_item = {
-                'SKU': item['SKU'],
-                'Name': item['Name'],
-                'Price': float(item['Price']) if item['Price'] else None,
-                'Quantity': item['Quantity'],
-                'Material': item['Material'],
-                'Gemstone': item['Gemstone'],
-                'Weight': item['Weight'],
-                'Description': item['Description'],
-                'Tag': item['Tag'],
-                'Picture': None,
-                'Sold_Date': item['Sold_Date'].strftime('%Y-%m-%d %H:%M:%S') if item['Sold_Date'] else None
-            }
-            
-            # Handle image path for display
             if item['Picture']:
-                try:
-                    processed_item['Picture'] = url_for('static', filename=f"images/{item['Picture']}")
-                except Exception as e:
-                    print(f"Error processing image for SKU {item['SKU']}: {e}")
-            
-            processed_items.append(processed_item)
+                # Create the correct URL for the image
+                image_url = url_for('static', filename=f'images/{item["Picture"]}')
+                item['Picture'] = image_url
+                print(f"SKU: {item['SKU']}, Image URL: {image_url}")  # Debug print
+            else:
+                print(f"SKU: {item['SKU']} has no image")  # Debug print
         
         cursor.close()
-        return render_template('inventory.html', items=processed_items)
-        
+        return render_template('inventory.html', items=items)
     except Exception as e:
-        print(f"Error in inventory: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Error fetching inventory: {e}")
         return str(e), 500
 
 @app.route('/inventory/remove/<int:sku>', methods=['POST'])
@@ -402,14 +430,16 @@ def repair_items():
             tax = request.form['tax']
             total = request.form['total']
             
-            # Handle file upload
-            picture = request.files['picture']
-            filename = None
-            if picture and allowed_file(picture.filename):
-                # Create unique filename using repair order number
-                file_extension = picture.filename.rsplit('.', 1)[1].lower()
-                filename = f"repair_{repair_order_number}.{file_extension}"
-                picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # Handle image upload
+            if 'image' in request.files:
+                image = request.files['image']
+                if image and image.filename:
+                    filename = save_image(image)
+                    # Store only filename in database
+                    cursor.execute(
+                        'INSERT INTO REPAIR_ORDER VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+                        (repair_order_number, customer_id, condition, employee_id, subtotal, tax, total, repair_date, notes, filename)
+                    )
             
             # Insert into database
             cursor = mysql.connection.cursor()
@@ -488,76 +518,70 @@ def orders_receipts():
 
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        
-        if request.method == 'POST':
-            if request.is_json:
-                data = request.get_json()
-                
-                if data.get('action') == 'delete_order':
-                    order_number = data.get('order_number')
-                    cursor.execute('DELETE FROM `ORDER` WHERE Order_Number = %s', (order_number,))
-                    mysql.connection.commit()
-                    return jsonify({'success': True, 'message': 'Order deleted successfully'})
-                
-                elif data.get('action') == 'save_order':
-                    order_data = data.get('order')
-                    
-                    # Generate a new order number
-                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM `ORDER`')
-                    result = cursor.fetchone()
-                    next_order_number = 1
-                    if result['max_order']:
-                        next_order_number = result['max_order'] + 1
-                    
-                    # Insert the order
-                    cursor.execute('''
-                        INSERT INTO `ORDER` (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    ''', (
-                        next_order_number,
-                        order_data['customer_id'],
-                        order_data['employee_id'],
-                        order_data['subtotal'],
-                        order_data['tax'],
-                        order_data['total']
-                    ))
-                    mysql.connection.commit()
-                    return jsonify({'success': True, 'message': 'Order saved successfully'})
-
-        # Fetch all orders with customer and employee names
-        cursor.execute('''
+        # Update query to include JOINs for customer and employee names
+        query = '''
             SELECT o.*, 
-                   c.First_Name as Customer_First_Name, 
-                   c.Last_Name as Customer_Last_Name,
-                   e.First_Name as Employee_First_Name, 
-                   e.Last_Name as Employee_Last_Name
-            FROM `ORDER` o
-            JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
-            JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
-            ORDER BY o.Order_Number DESC
-        ''')
+                   c.First_Name as customer_first_name,
+                   c.Last_Name as customer_last_name,
+                   e.First_Name as employee_first_name,
+                   e.Last_Name as employee_last_name
+            FROM ORDERS o
+            LEFT JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
+            LEFT JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
+        '''
+        cursor.execute(query)
         orders = cursor.fetchall()
-        
-        # Fetch employees and customers for the dropdowns
-        cursor.execute('SELECT Employee_ID, First_Name, Last_Name FROM EMPLOYEE')
-        employees = cursor.fetchall()
-        
-        cursor.execute('SELECT Customer_ID, First_Name, Last_Name FROM CUSTOMER')
-        customers = cursor.fetchall()
-        
-        return render_template('orders_receipts.html', 
-                             orders=orders,
-                             employees=employees,
-                             customers=customers)
-                             
+        return render_template('orders_receipts.html', orders=orders)
     except Exception as e:
         print(f"Error in orders_receipts: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return str(e), 500
 
 def open_browser():
     """Function to open the browser after a short delay"""
     time.sleep(1.5)  # Wait for server to start
     webbrowser.open('http://127.0.0.1:5000/')
+
+# Update image serving route/logic
+@app.route('/static/images/<path:filename>')
+def serve_image(filename):
+    try:
+        # Clean the filename to prevent directory traversal
+        filename = secure_filename(filename)
+        return send_from_directory('static/images', filename)
+    except Exception as e:
+        app.logger.error(f"Error serving image {filename}: {e}")
+        return "Image not found", 404
+
+# Create directories when app starts
+def create_upload_directories():
+    """Create necessary upload directories"""
+    static_folder = os.path.join(BASE_DIR, 'static')
+    images_folder = os.path.join(static_folder, 'images')
+    os.makedirs(images_folder, exist_ok=True)
+    print(f"Ensuring upload directory exists: {images_folder}")
+
+# Create directories when app starts
+create_upload_directories()
+
+@app.route('/debug/images')
+def debug_images():
+    """Debug route to list all images in the static/images directory"""
+    images_dir = os.path.join(BASE_DIR, 'static', 'images')
+    images = []
+    try:
+        for filename in os.listdir(images_dir):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                file_path = os.path.join(images_dir, filename)
+                images.append({
+                    'name': filename,
+                    'path': file_path,
+                    'exists': os.path.exists(file_path),
+                    'size': os.path.getsize(file_path) if os.path.exists(file_path) else 0
+                })
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+    
+    return {'images': images}
 
 if __name__ == '__main__':
     try:

@@ -209,7 +209,7 @@
     </div>
 
     <div class="container">
-        <form id="inventory-form" enctype="multipart/form-data" method="POST" action="{{ url_for('inventory') }}">
+        <form id="inventory-form" method="POST" action="{{ url_for('inventory') }}" enctype="multipart/form-data">
             <input type="text" name="sku" placeholder="Jewelry SKU" required>
             <input type="text" name="item_name" placeholder="Jewelry Name" required>
             <input type="text" name="material" placeholder="Material (e.g., Gold, Silver)" required>
@@ -218,8 +218,7 @@
             <input type="number" name="price" placeholder="Price ($)" required>
             <input type="number" name="quantity" placeholder="Quantity" required>
             <textarea name="description" placeholder="Jewelry Description" style="width:100%;"></textarea>
-            <input type="file" name="picture" accept="image/*" required 
-                   onchange="validateFileSize(this)" max-size="10485760">
+            <input type="file" name="picture" accept="image/*" required>
             <button type="submit">Add Jewelry</button>
         </form>
 
@@ -228,12 +227,12 @@
         <table id="inventory-table">
             <thead>
                 <tr>
-                    <th>Jewelry ID</th>
+                    <th>SKU</th>
                     <th>Name</th>
                     <th>Material</th>
                     <th>Gemstone</th>
-                    <th>Weight (grams)</th>
-                    <th>Price ($)</th>
+                    <th>Weight</th>
+                    <th>Price</th>
                     <th>Quantity</th>
                     <th>Description</th>
                     <th>Image</th>
@@ -245,18 +244,23 @@
                 <tr>
                     <td>{{ item.SKU }}</td>
                     <td>{{ item.Name }}</td>
-                    <td>{{ item.Material or 'N/A' }}</td>
-                    <td>{{ item.Gemstone or 'N/A' }}</td>
-                    <td>{{ item.Weight or 'N/A' }}</td>
-                    <td>${{ item.Price }}</td>
+                    <td>{{ item.Material if item.Material else 'N/A' }}</td>
+                    <td>{{ item.Gemstone if item.Gemstone else 'N/A' }}</td>
+                    <td>{{ item.Weight if item.Weight else 'N/A' }}</td>
+                    <td>${{ "%.2f"|format(item.Price) if item.Price else '0.00' }}</td>
                     <td>{{ item.Quantity }}</td>
-                    <td>{{ item.Description or 'N/A' }}</td>
-                    {% if item.Picture %}
-                        <td><img src="{{ item.Picture }}" alt="{{ item.Name }}" style="max-width: 200px;"></td>
-                    {% else %}
-                        <td><div class="no-image">No Image</div></td>
-                    {% endif %}
-                    <td><button class="remove" onclick="removeItem('{{ item.SKU }}')">Remove</button></td>
+                    <td>{{ item.Description if item.Description else 'N/A' }}</td>
+                    <td>
+                        {% if item.Picture %}
+                            <img src="{{ item.Picture }}" alt="Product Image" style="max-width: 100px; height: auto;" 
+                                 onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'; console.log('Error loading image: {{ item.Picture }}');">
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="removeItem('{{ item.SKU }}')">Remove</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -280,8 +284,10 @@
             filteredInventory.forEach(item => {
                 const row = document.createElement('tr');
                 const pictureHtml = item.Picture 
-                    ? `<img src="${item.Picture}" alt="${item.Name}" style="max-width: 200px;">`
-                    : `<div class="no-image">No Image</div>`;
+                    ? `<img src="${item.Picture}" alt="Product Image" style="max-width: 100px; height: auto;" 
+                        onerror="this.onerror=null; this.src='${staticUrl('images/placeholder.jpg')}'; 
+                        console.log('Error loading image:', '${item.Picture}');">`
+                    : 'No Image';
                 
                 row.innerHTML = `
                     <td>${item.SKU}</td>
@@ -335,6 +341,17 @@
                 }
             }
         }
+
+        // Add this function to help debug image loading
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                console.log('Image source:', img.src);
+                img.addEventListener('error', function() {
+                    console.error('Failed to load image:', this.src);
+                });
+            });
+        });
     </script>
 </body>
 </html>
