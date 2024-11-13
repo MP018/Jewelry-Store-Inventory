@@ -20,6 +20,17 @@ app = Flask(__name__)
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = ':)'
 
+# Add upload folder configuration
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create uploads directory if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Change this to your secret key (can be anything, it's for extra protection)
+app.secret_key = ':)'
+
 # Get the absolute path to the ca.pem file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(current_dir, 'Backend', 'ca.pem')
@@ -218,14 +229,20 @@ def inventory():
                     if len(picture_data) > 10 * 1024 * 1024:  # 10MB in bytes
                         flash('Image file is too large. Please upload an image smaller than 10MB.', 'error')
                         return redirect(url_for('inventory'))
+                    
+                    # Save file to static/images directory
+                    filename = f"{sku}_{secure_filename(picture.filename)}"
+                    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    with open(picture_path, 'wb') as f:
+                        f.write(picture_data)
                 else:
-                    picture_data = None
+                    filename = None
                 
                 # First insert into ITEM table (parent table)
                 cursor.execute('''
                     INSERT INTO `ITEM` (SKU, Picture, Price, Name, Quantity)
                     VALUES (%s, %s, %s, %s, %s)
-                ''', (sku, picture_data, price, name, quantity))
+                ''', (sku, filename, price, name, quantity))
                 
                 # Then insert into ITEM_TAGS table (child table)
                 cursor.execute('''
@@ -277,11 +294,10 @@ def inventory():
                 'Sold_Date': item['Sold_Date'].strftime('%Y-%m-%d %H:%M:%S') if item['Sold_Date'] else None
             }
             
-            # Handle BLOB data for image
+            # Handle image path for display
             if item['Picture']:
                 try:
-                    image_data = base64.b64encode(item['Picture']).decode('utf-8')
-                    processed_item['Picture'] = f"data:image/jpeg;base64,{image_data}"
+                    processed_item['Picture'] = url_for('static', filename=f"images/{item['Picture']}")
                 except Exception as e:
                     print(f"Error processing image for SKU {item['SKU']}: {e}")
             
@@ -323,11 +339,11 @@ def get_image(sku):
     result = cursor.fetchone()
     cursor.close()
 
-    if result:
+    if result and result['Picture']:
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['Picture'])
-        return send_file(image_path, mimetype='image/jpeg')
-    else:
-        return '', 404
+        if os.path.exists(image_path):
+            return send_file(image_path, mimetype='image/jpeg')
+    return '', 404
 
 # Notes route
 @app.route('/notes', methods=['GET', 'POST'])
@@ -390,7 +406,9 @@ def repair_items():
             picture = request.files['picture']
             filename = None
             if picture and allowed_file(picture.filename):
-                filename = secure_filename(picture.filename)
+                # Create unique filename using repair order number
+                file_extension = picture.filename.rsplit('.', 1)[1].lower()
+                filename = f"repair_{repair_order_number}.{file_extension}"
                 picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             
             # Insert into database
@@ -417,13 +435,12 @@ def repair_items():
     cursor.execute('SELECT * FROM REPAIR_ORDER')
     repair_items = cursor.fetchall()
     
-    # Convert image data to string if it exists
+    # Process images for display
     for item in repair_items:
-        if item['Image'] and isinstance(item['Image'], bytes):
-            item['Image'] = item['Image'].decode('utf-8')
+        if item['Image']:
+            item['Image'] = url_for('static', filename=f"images/{item['Image']}")
     
     cursor.close()
-    
     return render_template('repair_items.html', repair_items=repair_items)
 
 @app.route('/remove_repair_item/<repair_order_number>', methods=['POST'])
@@ -432,7 +449,18 @@ def remove_repair_item(repair_order_number):
         return jsonify({'error': 'Not logged in'}), 401
 
     try:
-        cursor = mysql.connection.cursor()
+        # First get the image filename
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT Image FROM REPAIR_ORDER WHERE Repair_Order_Number = %s', (repair_order_number,))
+        result = cursor.fetchone()
+        
+        if result and result['Image']:
+            # Delete the image file
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['Image'])
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        
+        # Delete the database record
         cursor.execute('DELETE FROM REPAIR_ORDER WHERE Repair_Order_Number = %s', (repair_order_number,))
         mysql.connection.commit()
         cursor.close()
@@ -440,20 +468,19 @@ def remove_repair_item(repair_order_number):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Get image route
-@app.route('/repair_items/image/<repair_item_id>', methods=['GET'])
-def get_repair_item_image(repair_item_id):
+@app.route('/repair_items/image/<repair_order_number>', methods=['GET'])
+def get_repair_item_image(repair_order_number):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT Image FROM REPAIR_ORDER WHERE Repair_Item_ID = %s", (repair_item_id,))
+    cursor.execute("SELECT Image FROM REPAIR_ORDER WHERE Repair_Order_Number = %s", (repair_order_number,))
     result = cursor.fetchone()
     cursor.close()
 
-    if result:
+    if result and result['Image']:
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['Image'])
-        return send_file(image_path, mimetype='image/jpeg')
-    else:
-        return '', 404
-    
+        if os.path.exists(image_path):
+            return send_file(image_path, mimetype='image/jpeg')
+    return '', 404
+
 @app.route('/orders_receipts', methods=['GET', 'POST'])
 def orders_receipts():
     if 'loggedin' not in session:
@@ -468,7 +495,7 @@ def orders_receipts():
                 
                 if data.get('action') == 'delete_order':
                     order_number = data.get('order_number')
-                    cursor.execute('DELETE FROM ORDERS WHERE Order_Number = %s', (order_number,))
+                    cursor.execute('DELETE FROM `ORDER` WHERE Order_Number = %s', (order_number,))
                     mysql.connection.commit()
                     return jsonify({'success': True, 'message': 'Order deleted successfully'})
                 
@@ -476,7 +503,7 @@ def orders_receipts():
                     order_data = data.get('order')
                     
                     # Generate a new order number
-                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM ORDERS')
+                    cursor.execute('SELECT MAX(Order_Number) as max_order FROM `ORDER`')
                     result = cursor.fetchone()
                     next_order_number = 1
                     if result['max_order']:
@@ -484,7 +511,7 @@ def orders_receipts():
                     
                     # Insert the order
                     cursor.execute('''
-                        INSERT INTO ORDERS (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
+                        INSERT INTO `ORDER` (Order_Number, Customer_ID, Employee_ID, Subtotal, Tax, Total)
                         VALUES (%s, %s, %s, %s, %s, %s)
                     ''', (
                         next_order_number,
@@ -504,7 +531,7 @@ def orders_receipts():
                    c.Last_Name as Customer_Last_Name,
                    e.First_Name as Employee_First_Name, 
                    e.Last_Name as Employee_Last_Name
-            FROM ORDERS o
+            FROM `ORDER` o
             JOIN CUSTOMER c ON o.Customer_ID = c.Customer_ID
             JOIN EMPLOYEE e ON o.Employee_ID = e.Employee_ID
             ORDER BY o.Order_Number DESC
