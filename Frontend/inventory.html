@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jewelry Inventory Management</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-        }
+      
         .container {
             margin-left: 220px;
             padding: 20px;
@@ -64,106 +59,10 @@
         #filter {
             margin-top: 20px;
         }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
-        .sidebar {
-            width: 200px;
-            height: 100vh;
-            background-color: #eae3d2;
-            position: fixed;
-            padding-top: 20px;
-        }
-        .sidebar a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
+        
         .content {
             margin-left: 220px;
             padding: 20px;
-        }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-btn:hover{
-            background-color: #57574f;
-        }
-        .notes-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .notes-btn:hover {
-            background-color: #57574f;
-        }
-        .inventory-button{
-            background-color: #000;
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-
-        }
-        .inventory-button:hover {
-            background-color: #57574f;
-        }
-        .repair-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 38px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .repair-btn:hover{
-            background-color: #57574f;
-        }
-        .orders-receipts{
-            background-color: #000;
-            color: white;
-            padding: 18px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .orders-receipts:hover{
-            background-color: #57574f;
         }
         body {
             font-family: Arial, sans-serif;
@@ -178,14 +77,79 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
-    font-size: 24px;
-    margin: 0;
-    position: relative; /* Add position here */
-    animation: moveText 8s linear infinite;
-    white-space: nowrap; /* Ensure the text stays on one line */
-}
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
+        }
+        
+       
     </style>
 </head>
 
@@ -197,7 +161,7 @@
     </div>
     
     <div class="sidebar">
-        <a href="dashboard.html">Dashboard</a>
+        <a href="dashboard.html"><button class="profile-btn">Dashboard</button></a>
         <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
         <a href="inventory.html"><button class="inventory-button">Inventory</button></a>
         <a href="notes.html"><button class="notes-btn">Manage Notes</button></a>
