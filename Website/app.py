@@ -425,14 +425,16 @@ def repair_items():
             # Get form data
             repair_order_number = request.form['repair_order_number']
             item_name = request.form['item_name']
-            condition = request.form['condition']
+            description = request.form['description']
             repair_date = request.form['repair_date']
-            notes = request.form['notes']
+            repair_notes = request.form['repair_notes']
             customer_id = request.form['customer_id']
             employee_id = request.form['employee_id']
             subtotal = request.form['subtotal']
             tax = request.form['tax']
             total = request.form['total']
+
+            cursor = mysql.connection.cursor()
             
             # Handle image upload
             if 'image' in request.files:
@@ -441,19 +443,16 @@ def repair_items():
                     filename = save_image(image)
                     # Store only filename in database
                     cursor.execute(
-                        'INSERT INTO REPAIR_ORDER VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-                        (repair_order_number, customer_id, condition, employee_id, subtotal, tax, total, repair_date, notes, filename)
+                        'INSERT INTO REPAIR_ORDER (Repair_order_Number, Item_Name, Description, Employee_ID, Customer_ID, Image, Subtotal, Total, Tax, Repair_Date, Repair_Notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                        (repair_order_number, item_name, description, employee_id,  customer_id, filename, subtotal, tax, total, repair_date, repair_notes)
                     )
-            
-            # Insert into database
-            cursor = mysql.connection.cursor()
-            cursor.execute("""
-                INSERT INTO REPAIR_ORDER 
-                (Repair_Order_Number, Item_Name, Description, Employee_ID, Customer_ID, 
-                Image, Subtotal, Tax, Total, Repair_Date, Repair_Notes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (repair_order_number, item_name, condition, employee_id, customer_id, 
-                  filename, subtotal, tax, total, repair_date, notes))
+            else:
+                # No image provided
+                cursor.execute(
+                    'INSERT INTO REPAIR_ORDER (Repair_order_Number, Item_Name, Description, Employee_ID, Customer_ID, Subtotal, Total, Tax, Repair_Date, Repair_Notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (repair_order_number, item_name, description, employee_id,  customer_id, subtotal, tax, total, repair_date, repair_notes)
+                )
+                
             
             mysql.connection.commit()
             cursor.close()
@@ -522,7 +521,8 @@ def orders_receipts():
 
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        # Update query to include JOINs for customer and employee names
+        
+        # Fetch orders with JOINs for customer and employee names
         query = '''
             SELECT o.*, 
                    c.First_Name as customer_first_name,
@@ -535,7 +535,18 @@ def orders_receipts():
         '''
         cursor.execute(query)
         orders = cursor.fetchall()
-        return render_template('orders_receipts.html', orders=orders)
+        
+        # Fetch customers
+        cursor.execute('SELECT Customer_ID, First_Name, Last_Name FROM CUSTOMER')
+        customers = cursor.fetchall()
+        
+        # Fetch employees
+        cursor.execute('SELECT Employee_ID, First_Name, Last_Name FROM EMPLOYEE')
+        employees = cursor.fetchall()
+        
+        cursor.close()
+        
+        return render_template('orders_receipts.html', orders=orders, customers=customers, employees=employees)
     except Exception as e:
         print(f"Error in orders_receipts: {e}")
         return str(e), 500
