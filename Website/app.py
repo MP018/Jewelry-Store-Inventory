@@ -522,6 +522,32 @@ def orders_receipts():
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
+        if request.method == 'POST':
+            data = request.get_json()
+            action = data.get('action')
+
+            if action == 'save_order':
+                order = data.get('order')
+                customer_id = order.get('customer_id')
+                employee_id = order.get('employee_id')
+                subtotal = order.get('subtotal')
+                tax = order.get('tax')
+                total = order.get('total')
+
+                # Insert the new order into the database
+                cursor.execute("""
+                    INSERT INTO ORDERS (Customer_ID, Employee_ID, Subtotal, Tax, Total, Sold_Date)
+                    VALUES (%s, %s, %s, %s, %s, NOW())
+                """, (customer_id, employee_id, subtotal, tax, total))
+                mysql.connection.commit()
+                return jsonify({'success': True}), 200
+
+            elif action == 'delete_order':
+                order_number = data.get('order_number')
+                cursor.execute('DELETE FROM ORDERS WHERE Order_Number = %s', (order_number,))
+                mysql.connection.commit()
+                return jsonify({'success': True}), 200
+
         # Fetch orders with JOINs for customer and employee names
         query = '''
             SELECT o.*, 
@@ -546,7 +572,10 @@ def orders_receipts():
         
         cursor.close()
         
-        return render_template('orders_receipts.html', orders=orders, customers=customers, employees=employees)
+        # Determine the next order number
+        next_order_number = max([order['Order_Number'] for order in orders], default=0) + 1
+        
+        return render_template('orders_receipts.html', orders=orders, customers=customers, employees=employees, next_order_number=next_order_number)
     except Exception as e:
         print(f"Error in orders_receipts: {e}")
         return str(e), 500
