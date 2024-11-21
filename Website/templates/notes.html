@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #fff5d7;
+            background-color: #f5f5dc;
             margin: 0;
             padding: 0;
         }
@@ -18,21 +18,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
             font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            position: relative;
-            animation: moveText 8s linear infinite;
-            white-space: nowrap;
-        }
-        @keyframes moveText {
-            0% {
-                left: -100%;
-            }
-            100% {
-                left: 100%;
-            }
         }
         .navbar a {
             color: white;
@@ -48,6 +39,7 @@
             background-color: #eae3d2;
             position: fixed;
             padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
         .sidebar a {
             display: flex;
@@ -57,6 +49,7 @@
             padding: 15px;
             text-decoration: none;
             font-size: 15px;
+            transition: background-color 0.3s;
         }
         .sidebar a:hover {
             background-color: #ccc;
@@ -64,19 +57,40 @@
         .content {
             margin-left: 220px;
             padding: 20px;
+            background-color: #f5f5dc;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
-        .logout-btn, .dashboard-btn, .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+        .logout-btn {
             background-color: #000;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            width: 100%; /* Ensure buttons take full width */
+            transition: background-color 0.3s;
         }
-        .logout-btn:hover, .dashboard-btn:hover, .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+        .logout-btn:hover {
             background-color: #57574f;
         }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
+        }
+        
+       
         .notes-section {
             margin-top: 20px;
         }
@@ -91,13 +105,12 @@
             border-radius: 4px;
         }
         .add-note button {
-            background-color: #28a745;
+            background-color: #000;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            width: 100%; /* Ensure add button takes full width */
         }
         .add-note button:hover {
             background-color: #57574f;
@@ -132,6 +145,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+        
     </style>
 </head>
 <body>
