@@ -64,11 +64,11 @@ load_dotenv()
 
 # Update MySQL configuration
 app.config.update(
-    MYSQL_HOST=os.getenv('MYSQL_HOST', "palacejewelers-palacejewelers.j.aivencloud.com"),
-    MYSQL_USER=os.getenv('MYSQL_USER', "avnadmin"),
-    MYSQL_PASSWORD=os.getenv('MYSQL_PASSWORD', "AVNS_eTE1cr2Go3sTM_VZneL"),
-    MYSQL_DB=os.getenv('MYSQL_DB', "PalaceDatabase"),
-    MYSQL_PORT=int(os.getenv('MYSQL_PORT', 16246)),
+    MYSQL_HOST=os.getenv('MYSQL_HOST'),
+    MYSQL_USER=os.getenv('MYSQL_USER'),
+    MYSQL_PASSWORD=os.getenv('MYSQL_PASSWORD'),
+    MYSQL_DB=os.getenv('MYSQL_DB'),
+    MYSQL_PORT=int(os.getenv('MYSQL_PORT')),
     MYSQL_CURSORCLASS='DictCursor',
     MYSQL_SSL_CA=ca_path,
     MYSQL_SSL={
