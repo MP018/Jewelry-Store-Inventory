@@ -73,7 +73,7 @@ app.config.update(
     MYSQL_SSL_CA=ca_path,
     MYSQL_SSL={
         'ca': ca_path,
-        'check_hostname': False,
+        'check_hostname': True,
         'verify_mode': ssl.CERT_REQUIRED,
         'ssl_context': ssl_context
     }
