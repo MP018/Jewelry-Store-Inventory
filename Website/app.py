@@ -414,6 +414,12 @@ def logout():
     flash('You have been successfully logged out.')
     return redirect(url_for('login'))
 
+# Registration route
+@app.route('/registration', methods=['GET', 'POST'])
+def registration():
+    # Registration logic here
+    return render_template('registration.html')
+
 
 @app.route('/repair_items', methods=['GET', 'POST'])
 def repair_items():

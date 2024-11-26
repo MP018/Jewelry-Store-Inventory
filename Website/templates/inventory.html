@@ -1,141 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="""en"></html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="""UTF-8">
+    <meta name="""viewport" content="""width=device-width, initial-scale=1.0">
     <title>Jewelry Inventory Management</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fff5d7;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-    font-size: 24px;
-    margin: 0;
-    position: relative; /* Add position here */
-    animation: moveText 8s linear infinite;
-    white-space: nowrap; /* Ensure the text stays on one line */
-}
-
-@keyframes moveText {
-    0% {
-        left: -100%; /* Start off-screen to the right */
-    }
-    100% {
-        left: 100%; /* End off-screen to the left */
-    }
-}
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
-        .sidebar {
-            width: 200px;
-            height: 100vh;
-            background-color: #eae3d2;
-            position: fixed;
-            padding-top: 20px;
-        }
-        .sidebar a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
-        .content {
-            margin-left: 220px;
-            padding: 20px;
-        }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-btn:hover{
-            background-color: #57574f;
-        }
-        .notes-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .notes-btn:hover {
-            background-color: #57574f;
-        }
-        .inventory-button{
-            background-color: #000;
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-
-        }
-        .inventory-button:hover {
-            background-color: #57574f;
-        }
-        .repair-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .repair-btn:hover{
-            background-color: #57574f;
-        }
-        .orders-receipts{
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .orders-receipts:hover{
-            background-color: #57574f;
-        }
+      
         .container {
             margin-left: 220px;
             padding: 20px;
@@ -189,169 +59,227 @@
         #filter {
             margin-top: 20px;
         }
+        
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
+        }
+        
+       
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
+    
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
     </div>
     
     <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}"><button class="profile-btn">Dashboard</button></a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
         <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
         <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
         <a href="{{ url_for('repair_items') }}"><button class="repair-btn">Repair Items</button></a>
-        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
+        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
-    <div class="container">
-        <form id="inventory-form" method="POST" action="{{ url_for('inventory') }}" enctype="multipart/form-data">
-            <input type="text" name="sku" placeholder="Jewelry SKU" required>
-            <input type="text" name="item_name" placeholder="Jewelry Name" required>
-            <input type="text" name="material" placeholder="Material (e.g., Gold, Silver)" required>
-            <input type="text" name="gemstone" placeholder="Gemstone (e.g., Diamond, Ruby)">
-            <input type="number" name="weight" placeholder="Weight (grams)" required>
-            <input type="number" name="price" placeholder="Price ($)" required>
-            <input type="number" name="quantity" placeholder="Quantity" required>
-            <textarea name="description" placeholder="Jewelry Description" style="width:100%;"></textarea>
-            <input type="file" name="picture" accept="image/*" required>
-            <button type="submit">Add Jewelry</button>
-        </form>
+<div class="container">
+    
+    
+    
+    <form id="inventory-form">
+        <input type="text" id="item-id" placeholder="Jewelry ID" required>
+        <input type="text" id="item-name" placeholder="Jewelry Name" required>
+        <input type="text" id="item-material" placeholder="Material (e.g., Gold, Silver)" required>
+        <input type="text" id="item-gemstone" placeholder="Gemstone (e.g., Diamond, Ruby)">
+        <input type="number" id="item-weight" placeholder="Weight (grams)" required>
+        <input type="number" id="item-price" placeholder="Price ($)" required>
+        <input type="number" id="item-quantity" placeholder="Quantity" required>
+        <textarea id="item-description" placeholder="Jewelry Description" style="width:100%;"></textarea>
+        <input type="file" id="item-image" accept="image/*" required>
+        <button type="submit">Add Jewelry</button>
+    </form>
 
-        <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Material, Name, Gemstone)" style="width:100%; padding:10px; margin-top:20px;">
+    <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Material, Name, Gemstone)" style="width:100%; padding:10px; margin-top:20px;">
 
-        <table id="inventory-table">
-            <thead>
-                <tr>
-                    <th>SKU</th>
-                    <th>Name</th>
-                    <th>Material</th>
-                    <th>Gemstone</th>
-                    <th>Weight</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Description</th>
-                    <th>Image</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ item.SKU }}</td>
-                    <td>{{ item.Name }}</td>
-                    <td>{{ item.Material if item.Material else 'N/A' }}</td>
-                    <td>{{ item.Gemstone if item.Gemstone else 'N/A' }}</td>
-                    <td>{{ item.Weight if item.Weight else 'N/A' }}</td>
-                    <td>${{ "%.2f"|format(item.Price) if item.Price else '0.00' }}</td>
-                    <td>{{ item.Quantity }}</td>
-                    <td>{{ item.Description if item.Description else 'N/A' }}</td>
-                    <td>
-                        {% if item.Picture %}
-                            <img src="{{ item.Picture }}" alt="Product Image" style="max-width: 100px; height: auto;" 
-                                 onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'; console.log('Error loading image: {{ item.Picture }}');">
-                        {% else %}
-                            No Image
-                        {% endif %}
-                    </td>
-                    <td>
-                        <button onclick="removeItem('{{ item.SKU }}')">Remove</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <table id="inventory-table">
+        <thead>
+            <tr>
+                <th>Jewelry ID</th>
+                <th>Name</th>
+                <th>Material</th>
+                <th>Gemstone</th>
+                <th>Weight (grams)</th>
+                <th>Price ($)</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Inventory items will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
 
-    <script>
-        let inventory = {{ items | tojson | safe }};
+<script>
+    let inventory = [];
 
-        function displayInventory(filterValue = '') {
-            const tbody = document.querySelector('#inventory-table tbody');
-            tbody.innerHTML = ''; // Clear the existing rows
-            
-            // Filter the inventory based on the filter value
-            const filteredInventory = inventory.filter(item => {
+    document.getElementById('inventory-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        
+        const itemId = document.getElementById('item-id').value;
+        const itemName = document.getElementById('item-name').value;
+        const itemMaterial = document.getElementById('item-material').value;
+        const itemGemstone = document.getElementById('item-gemstone').value;
+        const itemWeight = document.getElementById('item-weight').value;
+        const itemPrice = document.getElementById('item-price').value;
+        const itemQuantity = document.getElementById('item-quantity').value;
+        const itemDescription = document.getElementById('item-description').value;
+        const itemImage = document.getElementById('item-image').files[0];
+        
+        // Create an object to store the jewelry data
+        const newItem = {
+            id: itemId,
+            name: itemName,
+            material: itemMaterial,
+            gemstone: itemGemstone,
+            weight: itemWeight,
+            price: itemPrice,
+            quantity: itemQuantity,
+            description: itemDescription,
+            image: URL.createObjectURL(itemImage)  // Convert image file to a URL
+        };
+
+        inventory.push(newItem);
+        displayInventory();
+        this.reset();  // Reset form after submission
+    });
+
+    function displayInventory(filterValue = '') {
+        const tbody = document.querySelector('#inventory-table tbody');
+        tbody.innerHTML = '';  // Clear the table body
+
+        inventory
+            .filter(item => {
                 const searchableString = Object.values(item).join(' ').toLowerCase();
                 return searchableString.includes(filterValue.toLowerCase());
-            });
-
-            // Create new rows for each filtered item
-            filteredInventory.forEach(item => {
+            })
+            .forEach(item => {
                 const row = document.createElement('tr');
-                const pictureHtml = item.Picture 
-                    ? `<img src="${item.Picture}" alt="Product Image" style="max-width: 100px; height: auto;" 
-                        onerror="this.onerror=null; this.src='${staticUrl('images/placeholder.jpg')}'; 
-                        console.log('Error loading image:', '${item.Picture}');">`
-                    : 'No Image';
-                
                 row.innerHTML = `
-                    <td>${item.SKU}</td>
-                    <td>${item.Name}</td>
-                    <td>${item.Material || 'N/A'}</td>
-                    <td>${item.Gemstone || 'N/A'}</td>
-                    <td>${item.Weight || 'N/A'}</td>
-                    <td>$${item.Price}</td>
-                    <td>${item.Quantity}</td>
-                    <td>${item.Description || 'N/A'}</td>
-                    <td>${pictureHtml}</td>
-                    <td><button class="remove" onclick="removeItem('${item.SKU}')">Remove</button></td>
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.material}</td>
+                    <td>${item.gemstone || 'N/A'}</td>
+                    <td>${item.weight}</td>
+                    <td>$${item.price}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.description}</td>
+                    <td><img src="${item.image}" alt="${item.name} Image"></td>
+                    <td><button class="remove" onclick="removeItem('${item.id}')">Remove</button></td>
                 `;
                 tbody.appendChild(row);
             });
-        }
+    }
 
-        function staticUrl(filename) {
-            return "{{ url_for('static', filename='') }}" + filename;
-        }
+    function removeItem(itemId) {
+        inventory = inventory.filter(item => item.id !== itemId);
+        displayInventory();
+    }
 
-        function removeItem(sku) {
-            $.ajax({
-                url: '/inventory/remove/' + sku,
-                type: 'POST',
-                success: function(result) {
-                    // Remove the item from both the DOM and the inventory array
-                    $('button[onclick="removeItem(\'' + sku + '\')"]').closest('tr').remove();
-                    inventory = inventory.filter(item => item.SKU !== sku);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error removing item:', error);
-                }
-            });
-        }
+    document.getElementById('filter').addEventListener('input', function () {
+        const filterValue = this.value;
+        displayInventory(filterValue);
+    });
+</script>
 
-        document.getElementById('filter').addEventListener('input', function () {
-            const filterValue = this.value;
-            displayInventory(filterValue);
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            displayInventory(); // Initial display of the inventory
-        });
-
-        function validateFileSize(input) {
-            if (input.files && input.files[0]) {
-                if (input.files[0].size > 10 * 1024 * 1024) { // 10MB
-                    alert('File too large! Please select an image less than 10MB.');
-                    input.value = '';
-                }
-            }
-        }
-
-        // Add this function to help debug image loading
-        document.addEventListener('DOMContentLoaded', function() {
-            const images = document.querySelectorAll('img');
-            images.forEach(img => {
-                console.log('Image source:', img.src);
-                img.addEventListener('error', function() {
-                    console.error('Failed to load image:', this.src);
-                });
-            });
-        });
-    </script>
 </body>
 </html>

@@ -7,9 +7,87 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #fff5d7;
+            background-color: #f5f5dc;
             margin: 0;
             padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+            background-color: #57574f;
         }
         .container {
             margin-left: 220px;
@@ -64,126 +142,8 @@
         #filter {
             margin-top: 20px;
         }
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-            font-size: 24px;
-            margin: 0;
-            position: relative;
-            animation: moveText 8s linear infinite;
-            white-space: nowrap;
-        }
-        @keyframes moveText {
-            0% {
-                left: -100%;
-            }
-            100% {
-                left: 100%;
-            }
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
-        .sidebar {
-            width: 200px;
-            height: 100vh;
-            background-color: #eae3d2;
-            position: fixed;
-            padding-top: 20px;
-        }
-        .sidebar a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-btn:hover{
-            background-color: #57574f;
-        }
-        .notes-btn {
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .notes-btn:hover {
-            background-color: #57574f;
-        }
-        .inventory-button{
-            background-color: #000;
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-
-        }
-        .inventory-button:hover {
-            background-color: #57574f;
-        }
-        .repair-btn{
-            background-color: #000;
-            color: white;
-            padding: 18px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .repair-btn:hover{
-            background-color: #57574f;
-        }
-        .orders-receipts{
-            background-color: #000;
-            color: white;
-            padding: 18px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            
-        }
-        .orders-receipts:hover{
-            background-color: #57574f;
-        }
+        
+        
     </style>
 </head>
 
@@ -191,38 +151,33 @@
     <!-- Navbar and Sidebar -->
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
     </div>
 
     <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}"><button class="profile-btn">Dashboard</button></a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
         <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
         <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
         <a href="{{ url_for('repair_items') }}"><button class="repair-btn">Repair Items</button></a>
-        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
+        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
     <div class="container">
         <h1>Manage Repair Items</h1>
         
         <!-- Form for adding a new repair item -->
-        <form id="repair-form" method="POST" action="{{ url_for('repair_items') }}" enctype="multipart/form-data">
-            <input type="text" name="repair_order_number" id="repair-order-number" placeholder="Repair Order Number" required>
-            <input type="text" name="item_name" placeholder="Item Name" required>
-            <textarea name="description" placeholder="Description" required></textarea>
-            <input type="date" name="repair_date" id="repair-date" required>
-            <textarea name="repair_notes" placeholder="Repair Notes"></textarea>
-            <input type="file" name="image" accept="image/*">
-            <input type="text" name="customer_id" placeholder="Customer ID" required>
-            <input type="text" name="employee_id" placeholder="Employee ID" required>
-            <input type="number" step="0.01" name="subtotal" id="subtotal" placeholder="Subtotal ($)" required>
-            <input type="number" step="0.01" name="tax" id="tax" placeholder="Tax ($)" required>
-            <input type="number" step="0.01" name="total" id="total" placeholder="Total ($)" required>
+        <form id="repair-form">
+            <input type="text" id="item-id" placeholder="Repair Item ID" required>
+            <input type="text" id="item-name" placeholder="Jewelry Name" required>
+            <input type="text" id="item-condition" placeholder="Condition (e.g., Broken, Scratched)" required>
+            <input type="date" id="repair-date" placeholder="Repair Date" required>
+            <input type="number" id="repair-cost" placeholder="Estimated Repair Cost ($)" required>
+            <textarea id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
+            <input type="file" id="item-image" accept="image/*" required>
             <button type="submit">Add Repair Item</button>
         </form>
-        
-        
+
         <!-- Filter input to search through repair items -->
         <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Name, Condition)" style="width:100%; padding:10px; margin-top:20px;">
 
@@ -230,147 +185,85 @@
         <table id="repair-table">
             <thead>
                 <tr>
-                    <th>Repair Order Number</th>
+                    <th>Repair Item ID</th>
                     <th>Name</th>
-                    <th>Description</th>
+                    <th>Condition</th>
                     <th>Repair Date</th>
+                    <th>Repair Cost ($)</th>
                     <th>Notes</th>
                     <th>Image</th>
-                    <th>Customer ID</th>
-                    <th>Employee ID</th>
-                    <th>Subtotal ($)</th>
-                    <th>Tax ($)</th>
-                    <th>Total ($)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in repair_items %}
-                <tr>
-                    <td>{{ item.Repair_Order_Number }}</td>
-                    <td>{{ item.Item_Name }}</td>
-                    <td>{{ item.Description }}</td>
-                    <td>{{ item.Repair_Date }}</td>
-                    <td>{{ item.Repair_Notes }}</td>
-                    <td>
-                        {% if item.Image %}
-                            <img src="{{ item.Image }}" alt="Product Image">
-                        {% else %}
-                            No Image
-                        {% endif %}
-                    </td>
-                    <td>{{ item.Customer_ID }}</td>
-                    <td>{{ item.Employee_ID }}</td>
-                    <td>${{ "%.2f"|format(item.Subtotal) }}</td>
-                    <td>${{ "%.2f"|format(item.Tax) }}</td>
-                    <td>${{ "%.2f"|format(item.Total) }}</td>
-                    <td><button class="remove" onclick="removeItem('{{ item.Repair_Order_Number }}')">Remove</button></td>
-                </tr>
-                {% endfor %}
+                <!-- Repair items will be dynamically added here -->
             </tbody>
         </table>
     </div>
 
     <script>
-        document.getElementById('repair-form').addEventListener('submit', async function (event) {
+        let repairItems = [];
+
+        document.getElementById('repair-form').addEventListener('submit', function (event) {
             event.preventDefault();
             
-            const formData = new FormData(this);
+            const itemId = document.getElementById('item-id').value;
+            const itemName = document.getElementById('item-name').value;
+            const itemCondition = document.getElementById('item-condition').value;
+            const repairDate = document.getElementById('repair-date').value;
+            const repairCost = document.getElementById('repair-cost').value;
+            const repairNotes = document.getElementById('repair-notes').value;
+            const itemImage = document.getElementById('item-image').files[0];
             
-            try {
-                const response = await fetch("{{ url_for('repair_items') }}", {
-                    method: 'POST',
-                    body: formData
+            // Create an object to store the repair item data
+            const newItem = {
+                id: itemId,
+                name: itemName,
+                condition: itemCondition,
+                date: repairDate,
+                cost: repairCost,
+                notes: repairNotes,
+                image: URL.createObjectURL(itemImage)
+            };
+
+            repairItems.push(newItem);
+            displayRepairItems();
+            this.reset();  // Reset form after submission
+        });
+
+        function displayRepairItems(filterValue = '') {
+            const tbody = document.querySelector('#repair-table tbody');
+            tbody.innerHTML = '';  // Clear the table body
+
+            repairItems
+                .filter(item => {
+                    const searchableString = Object.values(item).join(' ').toLowerCase();
+                    return searchableString.includes(filterValue.toLowerCase());
+                })
+                .forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.condition}</td>
+                        <td>${item.date}</td>
+                        <td>$${item.cost}</td>
+                        <td>${item.notes}</td>
+                        <td><img src="${item.image}" alt="${item.name} Image"></td>
+                        <td><button class="remove" onclick="removeItem('${item.id}')">Remove</button></td>
+                    `;
+                    tbody.appendChild(row);
                 });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Reload the page to show updated data
-                    window.location.reload();
-                } else {
-                    throw new Error(result.error || 'Failed to add repair item');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to add repair item. Please try again.');
-            }
-        });
-
-        // Calculate total when subtotal or tax changes
-        document.getElementById('subtotal').addEventListener('input', calculateTotal);
-        document.getElementById('tax').addEventListener('input', calculateTotal);
-
-        function calculateTotal() {
-            const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
-            const tax = parseFloat(document.getElementById('tax').value) || 0;
-            const total = subtotal + tax;
-            document.getElementById('total').value = total.toFixed(2);
         }
 
-        async function removeItem(orderNumber) {
-            if (confirm('Are you sure you want to remove this repair item?')) {
-                try {
-                    const response = await fetch(`/remove_repair_item/${orderNumber}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        window.location.reload();
-                    } else {
-                        throw new Error(result.error || 'Failed to remove repair item');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to remove repair item. Please try again.');
-                }
-            }
+        function removeItem(itemId) {
+            repairItems = repairItems.filter(item => item.id !== itemId);
+            displayRepairItems();
         }
 
-        // Filter functionality
-        document.getElementById('filter').addEventListener('input', function() {
-            const filterValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#repair-table tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(filterValue) ? '' : 'none';
-            });
-        });
-
-        document.getElementById('repair-date').addEventListener('blur', function(e) {
-            let value = e.target.value;
-            if (!value) return;
-            
-            let date = new Date(value);
-            let year = date.getFullYear();
-            
-            if (year < 2000 || year > 2099) {
-                alert('Please enter a year between 2000 and 2099');
-                // Reset to current date
-                const today = new Date().toISOString().split('T')[0];
-                e.target.value = today;
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('repair-date').value = today;
+        document.getElementById('filter').addEventListener('input', function () {
+            const filterValue = this.value;
+            displayRepairItems(filterValue);
         });
     </script>
 </body>

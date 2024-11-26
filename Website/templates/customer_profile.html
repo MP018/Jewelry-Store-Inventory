@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Profile</title>
     <style>
-        /* Base styles from Frontend version */
-        body {
+       body {
             font-family: Arial, sans-serif;
             background-color: #f5f5dc;
             margin: 0;
             padding: 0;
         }
-        
-        /* Navbar with moving text */
         .navbar {
             background-color: #333;
             color: white;
@@ -21,26 +18,28 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
             font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            position: relative;
-            animation: moveText 8s linear infinite;
-            white-space: nowrap;
         }
-        @keyframes moveText {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
         }
-
-        /* Sidebar and button styles from Frontend */
+        .navbar a:hover {
+            text-decoration: underline;
+        }
         .sidebar {
             width: 200px;
             height: 100vh;
             background-color: #eae3d2;
             position: fixed;
             padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
         .sidebar a {
             display: flex;
@@ -50,9 +49,31 @@
             padding: 15px;
             text-decoration: none;
             font-size: 15px;
+            transition: background-color 0.3s;
         }
-        
-        /* Button styles */
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            background-color: #f5f5dc;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
         .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
             background-color: #000;
             color: white;
@@ -65,19 +86,13 @@
             margin-bottom: 10px;
             transition: background-color 0.3s;
         }
-        
-        .logout-btn:hover, .profile-btn:hover, .notes-btn:hover, 
-        .inventory-button:hover, .repair-btn:hover, .orders-receipts:hover {
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
-
-        /* Content area styles */
-        .content {
-            margin-left: 220px;
-            padding: 20px;
+        
+        h1 {
+            text-align: center;
         }
-
-        /* Table styles from Frontend */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -94,14 +109,22 @@
         td {
             background-color: #fff;
         }
-
-        /* Form styles from Frontend */
-        #add-user-form {
-            display: none;
+        .buttons {
+            display: flex;
+            justify-content: center;
             margin-top: 20px;
-            background-color: #eae3d2;
-            padding: 20px;
-            border-radius: 10px;
+        }
+        .buttons button {
+            background-color: #000;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        .buttons button:hover {
+            background-color: #57574f;
         }
         .input-group {
             margin-bottom: 15px;
@@ -117,36 +140,15 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-
-        /* Action buttons */
-        .action-button {
-            padding: 8px 15px;
-            margin: 0 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        #add-user-form {
+            display: none;
+            margin-top: 20px;
+            background-color: #eae3d2;
+            padding: 20px;
+            border-radius: 10px;
         }
-        .select-button {
-            background-color: #000;
-            color: white;
-        }
-        .remove-button {
-            background-color: #dc3545;
-            color: white;
-        }
-        .add-button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            margin: 20px 0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-add-button {
-            background-color: #28a745;
-            color: white;
-        }
+        
+        
     </style>
 </head>
 <body>
@@ -156,84 +158,93 @@
     </div>
 
     <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}"><button class="profile-btn">Dashboard</button></a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
         <a href="{{ url_for('inventory') }}"><button class="inventory-button">Inventory</button></a>
         <a href="{{ url_for('notes') }}"><button class="notes-btn">Manage Notes</button></a>
         <a href="{{ url_for('repair_items') }}"><button class="repair-btn">Repair Items</button></a>
-        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders-Receipts</button></a>
+        <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
     <div class="content">
         <h1>Customer Profile</h1>
 
-        <button class="add-button" onclick="toggleAddUserForm()">Add Customer</button>
+        
+    <!-- Table to display user details -->
+    <table id="user-table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.First_Name }}</td>
+                <td>{{ customer.Last_Name }}</td>
+                <td>{{ customer.Customer_Email }}</td>
+                <td>{{ customer.Customer_Phone }}</td>
+                <td>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
+                        <input type="hidden" name="action" value="remove">
+                        <button type="submit" class="action-button remove-button">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        <div id="add-user-form">
-            <h3>Add New Customer</h3>
-            <form method="POST" action="{{ url_for('customer_profile') }}">
-                <div class="input-group">
-                    <label for="first-name">First Name:</label>
-                    <input type="text" id="first-name" name="first_name" required>
-                </div>
-                <div class="input-group">
-                    <label for="last-name">Last Name:</label>
-                    <input type="text" id="last-name" name="last_name" required>
-                </div>
-                <div class="input-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="Customer_Email" required>
-                </div>
-                <div class="input-group">
-                    <label for="phone-number">Phone Number:</label>
-                    <input type="text" id="phone-number" name="Customer_Phone" required>
-                </div>
-                <button type="submit" name="action" value="add" class="action-button form-add-button">Add Customer</button>
-                <button type="button" onclick="toggleAddUserForm()" class="action-button remove-button">Cancel</button>
-            </form>
-        </div>
+    <!-- Buttons to add user -->
+    <div class="buttons">
+        <button onclick="showAddUserForm()">Add User</button>
+    </div>
 
-        <table id="user-table">
-            <thead>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Phone Number</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in customers %}
-                <tr>
-                    <td>{{ customer.First_Name }}</td>
-                    <td>{{ customer.Last_Name }}</td>
-                    <td>{{ customer.Customer_Email }}</td>
-                    <td>{{ customer.Customer_Phone }}</td>
-                    <td>
-                        <form method="POST" style="display:inline;">
-                            <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
-                            <input type="hidden" name="action" value="select">
-                            <button type="submit" class="action-button select-button">Select</button>
-                        </form>
-                        <form method="POST" style="display:inline;">
-                            <input type="hidden" name="customer_id" value="{{ customer.Customer_ID }}">
-                            <input type="hidden" name="action" value="remove">
-                            <button type="submit" class="action-button remove-button">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Hidden form to add new user details -->
+    <div id="add-user-form">
+        <h3>Add New User</h3>
+        <form method="POST" action="{{ url_for('customer_profile') }}">
+            <div class="input-group">
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" name="first_name" required>
+            </div>
+            <div class="input-group">
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" name="last_name" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="Customer_Email" required>
+            </div>
+            <div class="input-group">
+                <label for="phone-number">Phone Number:</label>
+                <input type="text" id="phone-number" name="Customer_Phone" required>
+            </div>
+            <button type="submit" name="action" value="add" class="action-button form-add-button">Add Customer</button>
+            <button type="button" onclick="hideAddUserForm()" class="action-button remove-button">Cancel</button>
+        </form>
     </div>
 
     <script>
-        function toggleAddUserForm() {
-            var form = document.getElementById('add-user-form');
-            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        // Show the form to add a new user
+        function showAddUserForm() {
+            document.getElementById("add-user-form").style.display = "block";
+        }
+
+        // Hide the add user form
+        function hideAddUserForm() {
+            document.getElementById("add-user-form").style.display = "none";
         }
     </script>
+
+    </div>
+
+
+    
 </body>
 </html>
-
