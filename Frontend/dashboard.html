@@ -18,6 +18,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
             font-size: 24px;
@@ -41,79 +46,77 @@
         .navbar a {
             text-decoration: none;
         }
-        .navbar button {
-            background-color: #000;
+        .register-btn {
+            background-color: #d3d398;
             color: white;
-            padding: 10px 20px;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
         }
-        .navbar button:hover {
-            background-color: #57574f;
+        .logout-btn {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .register-btn:hover, .logout-btn:hover {
+            background-color: #535a61;
+            transform: translateY(-3px);
         }
         .sidebar {
             width: 200px;
             height: 100vh;
             background-color: #eae3d2;
             position: fixed;
+            top: 50px;
+            left: 0;
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar a {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sidebar button {
+            background-color: #000;
+            color: white;
             padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-            transition: background-color 0.3s;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
-        .content {
-            margin-left: 220px;
-            padding: 20px;
-            background-color: #f5f5dc;
-            min-height: 100vh;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
             text-align: center;
-            margin-bottom: 10px;
             transition: background-color 0.3s;
         }
-        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
+        .sidebar button:hover {
             background-color: #57574f;
         }
         .content {
             margin-left: 220px;
-            padding: 20px;
+            padding: 80px 25px 25px 25px;
+            background-color: #f5f5dc;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .low-stock-alert {
+            background-color: #ffcccc;
+            color: #a00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -142,15 +145,59 @@
         <h2>Welcome to your Dashboard!</h2>
         <p>This is where you can view your account information, profile, and more.</p>
         
-        <!-- Section for Customer Profile -->
-        <h3 id="customer-profile">Customer Profile</h3>
-        <p>View and edit customer information here.</p>
+        <!-- Low Stock Alert -->
+        <div class="low-stock-alert" id="lowStockAlert" style="display: none;">
+            Warning: Some items are low in stock!
+        </div>
 
-        <!-- Sample profile data (you can replace it with dynamic data later) -->
-        <div>
-            <pre> hello Admin</pre>
+        <!-- Chart Section -->
+        <div class="chart-container">
+            <canvas id="inventoryChart"></canvas>
         </div>
     </div>
+
+    <script>
+        // Sample data from backend (replace with actual backend data)
+        const inventoryData = [
+            { name: 'Gold Necklace', quantity: 5 },
+            { name: 'Silver Ring', quantity: 2 },
+            { name: 'Diamond Earrings', quantity: 10 },
+            { name: 'Ruby Bracelet', quantity: 1 }
+        ];
+
+        // Check for low stock items
+        const lowStockItems = inventoryData.filter(item => item.quantity < 3);
+        if (lowStockItems.length > 0) {
+            document.getElementById('lowStockAlert').style.display = 'block';
+        }
+
+        // Prepare data for Chart.js
+        const labels = inventoryData.map(item => item.name);
+        const data = inventoryData.map(item => item.quantity);
+
+        // Create the chart
+        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        const inventoryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Inventory Quantity',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>
