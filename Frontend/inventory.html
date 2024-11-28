@@ -5,10 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jewelry Inventory Management</title>
     <style>
-      
-        .container {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            top: 50px;
+            left: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sidebar button {
+            background-color: #000;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .sidebar button:hover {
+            background-color: #57574f;
+        }
+        .content {
             margin-left: 220px;
-            padding: 20px;
+            padding: 80px 25px 25px 25px;
+            background-color: #f5f5dc;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
         }
         h1 {
             text-align: center;
@@ -58,103 +132,13 @@
         }
         #filter {
             margin-top: 20px;
-        }
-        
-        .content {
-            margin-left: 220px;
-            padding: 20px;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .navbar h1 {
-            font-size: 24px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
-        .sidebar {
-            width: 200px;
-            height: 100vh;
-            background-color: #eae3d2;
-            position: fixed;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-            transition: background-color 0.3s;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
-        .content {
-            margin-left: 220px;
-            padding: 20px;
-            background-color: #fff;
-            min-height: 100vh;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
             width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
+            padding: 10px;
         }
-        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
-            background-color: #57574f;
-        }
-        
-       
     </style>
 </head>
 
 <body>
-    
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
         <a href="logout.html"><button class="logout-btn">Logout</button></a>
@@ -165,121 +149,119 @@
         <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
         <a href="inventory.html"><button class="inventory-button">Inventory</button></a>
         <a href="notes.html"><button class="notes-btn">Manage Notes</button></a>
-        <a href="repair-items.html"><buttpn class="repair-btn">Repair items</buttpn></a>
-        <a href="orders-receipts.html"><buttpn class="orders-receipts"> Orders-receipts</buttpn></a>
+        <a href="repair-items.html"><button class="repair-btn">Repair Items</button></a>
+        <a href="orders-receipts.html"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
-<div class="container">
-    
-    
-    
-    <form id="inventory-form">
-        <input type="text" id="item-id" placeholder="Jewelry ID" required>
-        <input type="text" id="item-name" placeholder="Jewelry Name" required>
-        <input type="text" id="item-material" placeholder="Material (e.g., Gold, Silver)" required>
-        <input type="text" id="item-gemstone" placeholder="Gemstone (e.g., Diamond, Ruby)">
-        <input type="number" id="item-weight" placeholder="Weight (grams)" required>
-        <input type="number" id="item-price" placeholder="Price ($)" required>
-        <input type="number" id="item-quantity" placeholder="Quantity" required>
-        <textarea id="item-description" placeholder="Jewelry Description" style="width:100%;"></textarea>
-        <input type="file" id="item-image" accept="image/*" required>
-        <button type="submit">Add Jewelry</button>
-    </form>
-
-    <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Material, Name, Gemstone)" style="width:100%; padding:10px; margin-top:20px;">
-
-    <table id="inventory-table">
-        <thead>
-            <tr>
-                <th>Jewelry ID</th>
-                <th>Name</th>
-                <th>Material</th>
-                <th>Gemstone</th>
-                <th>Weight (grams)</th>
-                <th>Price ($)</th>
-                <th>Quantity</th>
-                <th>Description</th>
-                <th>Image</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Inventory items will be dynamically added here -->
-        </tbody>
-    </table>
-</div>
-
-<script>
-    let inventory = [];
-
-    document.getElementById('inventory-form').addEventListener('submit', function (event) {
-        event.preventDefault();
+    <div class="content">
+        <h1>Jewelry Inventory Management</h1>
         
-        const itemId = document.getElementById('item-id').value;
-        const itemName = document.getElementById('item-name').value;
-        const itemMaterial = document.getElementById('item-material').value;
-        const itemGemstone = document.getElementById('item-gemstone').value;
-        const itemWeight = document.getElementById('item-weight').value;
-        const itemPrice = document.getElementById('item-price').value;
-        const itemQuantity = document.getElementById('item-quantity').value;
-        const itemDescription = document.getElementById('item-description').value;
-        const itemImage = document.getElementById('item-image').files[0];
-        
-        // Create an object to store the jewelry data
-        const newItem = {
-            id: itemId,
-            name: itemName,
-            material: itemMaterial,
-            gemstone: itemGemstone,
-            weight: itemWeight,
-            price: itemPrice,
-            quantity: itemQuantity,
-            description: itemDescription,
-            image: URL.createObjectURL(itemImage)  // Convert image file to a URL
-        };
+        <form id="inventory-form">
+            <input type="text" id="item-id" placeholder="Jewelry ID" required>
+            <input type="text" id="item-name" placeholder="Jewelry Name" required>
+            <input type="text" id="item-material" placeholder="Material (e.g., Gold, Silver)" required>
+            <input type="text" id="item-gemstone" placeholder="Gemstone (e.g., Diamond, Ruby)">
+            <input type="number" id="item-weight" placeholder="Weight (grams)" required>
+            <input type="number" id="item-price" placeholder="Price ($)" required>
+            <input type="number" id="item-quantity" placeholder="Quantity" required>
+            <textarea id="item-description" placeholder="Jewelry Description" style="width:100%;"></textarea>
+            <input type="file" id="item-image" accept="image/*" required>
+            <button type="submit">Add Jewelry</button>
+        </form>
 
-        inventory.push(newItem);
-        displayInventory();
-        this.reset();  // Reset form after submission
-    });
+        <input type="text" id="filter" placeholder="Filter by any attribute (e.g., Material, Name, Gemstone)">
 
-    function displayInventory(filterValue = '') {
-        const tbody = document.querySelector('#inventory-table tbody');
-        tbody.innerHTML = '';  // Clear the table body
+        <table id="inventory-table">
+            <thead>
+                <tr>
+                    <th>Jewelry ID</th>
+                    <th>Name</th>
+                    <th>Material</th>
+                    <th>Gemstone</th>
+                    <th>Weight (grams)</th>
+                    <th>Price ($)</th>
+                    <th>Quantity</th>
+                    <th>Description</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Inventory items will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
 
-        inventory
-            .filter(item => {
-                const searchableString = Object.values(item).join(' ').toLowerCase();
-                return searchableString.includes(filterValue.toLowerCase());
-            })
-            .forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.id}</td>
-                    <td>${item.name}</td>
-                    <td>${item.material}</td>
-                    <td>${item.gemstone || 'N/A'}</td>
-                    <td>${item.weight}</td>
-                    <td>$${item.price}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.description}</td>
-                    <td><img src="${item.image}" alt="${item.name} Image"></td>
-                    <td><button class="remove" onclick="removeItem('${item.id}')">Remove</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-    }
+    <script>
+        let inventory = [];
 
-    function removeItem(itemId) {
-        inventory = inventory.filter(item => item.id !== itemId);
-        displayInventory();
-    }
+        document.getElementById('inventory-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            
+            const itemId = document.getElementById('item-id').value;
+            const itemName = document.getElementById('item-name').value;
+            const itemMaterial = document.getElementById('item-material').value;
+            const itemGemstone = document.getElementById('item-gemstone').value;
+            const itemWeight = document.getElementById('item-weight').value;
+            const itemPrice = document.getElementById('item-price').value;
+            const itemQuantity = document.getElementById('item-quantity').value;
+            const itemDescription = document.getElementById('item-description').value;
+            const itemImage = document.getElementById('item-image').files[0];
+            
+            // Create an object to store the jewelry data
+            const newItem = {
+                id: itemId,
+                name: itemName,
+                material: itemMaterial,
+                gemstone: itemGemstone,
+                weight: itemWeight,
+                price: itemPrice,
+                quantity: itemQuantity,
+                description: itemDescription,
+                image: URL.createObjectURL(itemImage)  // Convert image file to a URL
+            };
 
-    document.getElementById('filter').addEventListener('input', function () {
-        const filterValue = this.value;
-        displayInventory(filterValue);
-    });
-</script>
+            inventory.push(newItem);
+            displayInventory();
+            this.reset();  // Reset form after submission
+        });
 
+        function displayInventory(filterValue = '') {
+            const tbody = document.querySelector('#inventory-table tbody');
+            tbody.innerHTML = '';  // Clear the table body
+
+            inventory
+                .filter(item => {
+                    const searchableString = Object.values(item).join(' ').toLowerCase();
+                    return searchableString.includes(filterValue.toLowerCase());
+                })
+                .forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.material}</td>
+                        <td>${item.gemstone || 'N/A'}</td>
+                        <td>${item.weight}</td>
+                        <td>$${item.price}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.description}</td>
+                        <td><img src="${item.image}" alt="${item.name} Image"></td>
+                        <td><button class="remove" onclick="removeItem('${item.id}')">Remove</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+        }
+
+        function removeItem(itemId) {
+            inventory = inventory.filter(item => item.id !== itemId);
+            displayInventory();
+        }
+
+        document.getElementById('filter').addEventListener('input', function () {
+            const filterValue = this.value;
+            displayInventory(filterValue);
+        });
+    </script>
 </body>
 </html>
