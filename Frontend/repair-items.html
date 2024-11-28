@@ -18,6 +18,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
@@ -38,25 +42,31 @@
             height: 100vh;
             background-color: #eae3d2;
             position: fixed;
+            top: 50px;
+            left: 0;
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar a {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sidebar button {
+            background-color: #000;
+            color: white;
             padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
             transition: background-color 0.3s;
         }
-        .sidebar a:hover {
-            background-color: #ccc;
+        .sidebar button:hover {
+            background-color: #57574f;
         }
         .content {
             margin-left: 220px;
-            padding: 20px;
+            padding: 80px 25px 25px 25px;
             background-color: #fff;
             min-height: 100vh;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -72,21 +82,6 @@
             transition: background-color 0.3s;
         }
         .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
-        }
-        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
         .container {
@@ -142,8 +137,6 @@
         #filter {
             margin-top: 20px;
         }
-        
-        
     </style>
 </head>
 
@@ -159,11 +152,12 @@
         <a href="customer-profile.html"><button class="profile-btn">Customer Profile</button></a>
         <a href="inventory.html"><button class="inventory-button">Inventory</button></a>
         <a href="notes.html"><button class="notes-btn">Manage Notes</button></a>
-        <a href="repair-items.html"><buttpn class="repair-btn">Repair items</buttpn></a>
-        <a href="orders-receipts.html"><buttpn class="orders-receipts"> Orders-receipts</buttpn></a>
+        <a href="repair-items.html"><button class="repair-btn">Repair Items</button></a>
+        <a href="orders-receipts.html"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
     <div class="container">
+        <br>
         <h1>Manage Repair Items</h1>
         
         <!-- Form for adding a new repair item -->
