@@ -198,6 +198,7 @@ def customer_profile():
         elif action == 'select':
             customer_id = request.form['customer_id']
             session['Customer_ID'] = customer_id
+            print(f"Customer_ID set to {customer_id} in session")
             return redirect(url_for('notes'))
 
         return redirect(url_for('customer_profile'))
@@ -380,21 +381,22 @@ def get_image(sku):
 # Notes route
 @app.route('/notes', methods=['GET', 'POST'])
 def notes():
-    if 'Customer_ID' not in session:
-        return redirect(url_for('customer_profile'))
-
-    customer_id = session['Customer_ID']
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     if request.method == 'POST':
         note_title = request.form['note_title']
         note_content = request.form['note_content']
-        cursor.execute('INSERT INTO NOTES (title, content, customer_id) VALUES (%s, %s, %s)', 
-                       (note_title, note_content, customer_id))
+        cursor.execute('INSERT INTO NOTES (title, content) VALUES (%s, %s)', 
+                       (note_title, note_content))
         mysql.connection.commit()
 
-    cursor.execute('SELECT title, content FROM NOTES WHERE customer_id = %s', (customer_id,))
+    cursor.execute('SELECT title, content FROM NOTES')
     notes = cursor.fetchall()
+    cursor.close()
+    
     return render_template('notes.html', notes=notes)
 
 @app.route('/notes/delete/<title>', methods=['POST'])

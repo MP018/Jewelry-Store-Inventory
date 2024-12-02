@@ -89,8 +89,6 @@
         .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
-        
-       
         .notes-section {
             margin-top: 20px;
         }
@@ -145,14 +143,13 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
     </div>
 
     <div class="sidebar">
@@ -176,83 +173,49 @@
         <div class="notes-section">
             <div class="add-note">
                 <h3>Add a New Note</h3>
-                <input type="text" id="noteTitle" placeholder="Note Title">
-                <textarea id="noteContent" placeholder="Note Content"></textarea>
-                <button id="addNoteBtn">Add Note</button>
+                <form method="POST" action="{{ url_for('notes') }}">
+                    <input type="text" name="note_title" placeholder="Note Title" required>
+                    <textarea name="note_content" placeholder="Note Content" required></textarea>
+                    <button type="submit">Add Note</button>
+                </form>
             </div>
 
             <!-- List of Notes -->
             <h3>All Notes</h3>
-            <div id="notesContainer"></div>
+            <div id="notesContainer">
+                {% for note in notes %}
+                <div class="note-item">
+                    <div>
+                        <strong>{{ note.title }}</strong>
+                        <p>{{ note.content }}</p>
+                    </div>
+                    <form method="POST" action="{{ url_for('delete_note', title=note.title) }}">
+                        <button type="submit">Remove</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const notesContainer = document.getElementById('notesContainer');
-            const noteTitle = document.getElementById('noteTitle');
-            const noteContent = document.getElementById('noteContent');
-            const addNoteBtn = document.getElementById('addNoteBtn');
             const filterInput = document.getElementById('filterInput');
-
-            let notes = JSON.parse(localStorage.getItem('notes')) || [];
-
-            function displayNotes() {
-                notesContainer.innerHTML = '';
-                notes.forEach((note, index) => {
-                    const noteItem = document.createElement('div');
-                    noteItem.className = 'note-item';
-                    noteItem.innerHTML = `
-                        <div>
-                            <strong>${note.title}</strong>
-                            <p>${note.content}</p>
-                        </div>
-                        <button onclick="removeNote(${index})">Remove</button>
-                    `;
-                    notesContainer.appendChild(noteItem);
-                });
-            }
-
-            addNoteBtn.addEventListener('click', function() {
-                const title = noteTitle.value.trim();
-                const content = noteContent.value.trim();
-                if (title && content) {
-                    notes.push({ title, content });
-                    localStorage.setItem('notes', JSON.stringify(notes));
-                    displayNotes();
-                    noteTitle.value = '';
-                    noteContent.value = '';
-                }
-            });
-
-            window.removeNote = function(index) {
-                notes.splice(index, 1);
-                localStorage.setItem('notes', JSON.stringify(notes));
-                displayNotes();
-            }
+            const notesContainer = document.getElementById('notesContainer');
 
             filterInput.addEventListener('input', function() {
                 const searchText = filterInput.value.toLowerCase();
-                const filteredNotes = notes.filter(note => 
-                    note.title.toLowerCase().includes(searchText) || 
-                    note.content.toLowerCase().includes(searchText)
-                );
-                notesContainer.innerHTML = '';
-                filteredNotes.forEach((note, index) => {
-                    const noteItem = document.createElement('div');
-                    noteItem.className = 'note-item';
-                    noteItem.innerHTML = `
-                        <div>
-                            <strong>${note.title}</strong>
-                            <p>${note.content}</p>
-                        </div>
-                        <button onclick="removeNote(${index})">Remove</button>
-                    `;
-                    notesContainer.appendChild(noteItem);
+                const notes = notesContainer.querySelectorAll('.note-item');
+                notes.forEach(note => {
+                    const title = note.querySelector('strong').textContent.toLowerCase();
+                    const content = note.querySelector('p').textContent.toLowerCase();
+                    if (title.includes(searchText) || content.includes(searchText)) {
+                        note.style.display = '';
+                    } else {
+                        note.style.display = 'none';
+                    }
                 });
             });
-
-            displayNotes();
         });
     </script>
 
