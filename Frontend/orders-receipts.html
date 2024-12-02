@@ -98,7 +98,7 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .header button, .add-item-btn {
+        .header button, .add-item-btn, .commit-order-btn {
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -107,7 +107,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .header button:hover, .add-item-btn:hover {
+        .header button:hover, .add-item-btn:hover, .commit-order-btn:hover {
             background-color: #45a049;
         }
         .item {
@@ -189,114 +189,107 @@
                     <span>Item #1</span>
                     <input type="number" value="100.00" step="0.01" class="item-price" onchange="calculateTotals()" />
                     <button onclick="removeItem('item1')">Remove</button>
-                </div>
-            </div>
-
-            <!-- Add Item Button -->
-            <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
-
-            <!-- Totals Section -->
-            <div class="totals">
-                <div>Subtotal: $<span id="subtotal">100.00</span></div>
-                <div>Tax (7%): $<span id="tax">7.00</span></div>
-                <div>Total: $<span id="total">107.00</span></div>
-            </div>
-        </div>
-
-        <!-- Customer Modal -->
-        <div class="modal" id="customerModal">
-            <div class="modal-content">
-                <h2>Add Customer</h2>
-                <input type="text" id="customerName" placeholder="Customer Name" />
-                <button onclick="addCustomer()">Add Customer</button>
-                <button onclick="closeModal('customerModal')">Cancel</button>
-            </div>
-        </div>
-
-        <!-- Employee Modal -->
-        <div class="modal" id="employeeModal">
-            <div class="modal-content">
-                <h2>Add Employee</h2>
-                <input type="text" id="employeeName" placeholder="Employee Name" />
-                <button onclick="addEmployee()">Add Employee</button>
-                <button onclick="closeModal('employeeModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let itemCount = 1;
-        let taxRate = 0.07;
-
-        // Open modal
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "flex";
-        }
-
-        // Close modal
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-        }
-
-        // Add a new item function
-        function addItem() {
-            itemCount++;
-            const itemsContainer = document.getElementById("itemsContainer");
-            const itemDiv = document.createElement("div");
-            itemDiv.className = "item";
-            itemDiv.id = "item" + itemCount;
-            itemDiv.innerHTML = `
-                <span>Item #${itemCount}</span>
-                <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" />
-                <button onclick="removeItem('item${itemCount}')">Remove</button>
-            `;
-            itemsContainer.appendChild(itemDiv);
-            calculateTotals();
-        }
-
-        // Remove item function
-        function removeItem(itemId) {
-            const item = document.getElementById(itemId);
-            item.remove();
-            calculateTotals();
-        }
-
-        // Calculate totals
-        function calculateTotals() {
-            const prices = document.querySelectorAll('.item-price');
-            let subtotal = 0;
-            prices.forEach(price => {
-                subtotal += parseFloat(price.value) || 0;
-            });
-            const tax = subtotal * taxRate;
-            const total = subtotal + tax;
-
-            document.getElementById("subtotal").textContent = subtotal.toFixed(2);
-            document.getElementById("tax").textContent = tax.toFixed(2);
-            document.getElementById("total").textContent = total.toFixed(2);
-        }
-
-        // Add customer and display
-        function addCustomer() {
-            const customerName = document.getElementById("customerName").value;
-            if (customerName) {
-                alert(`Customer ${customerName} added successfully!`);
-                closeModal('customerModal');
-            } else {
-                alert("Please enter a customer name.");
-            }
-        }
-
-        // Add employee and display
-        function addEmployee() {
-            const employeeName = document.getElementById("employeeName").value;
-            if (employeeName) {
-                alert(`Employee ${employeeName} added successfully!`);
-                closeModal('employeeModal');
-            } else {
-                alert("Please enter an employee name.");
-            }
-        }
-    </script>
-</body>
-</html>
+                    </div>
+                    </div>
+                    <!-- Add Item Button -->
+                    <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+                    <!-- Commit Order Button -->
+                    <button class="commit-order-btn" onclick="commitOrder()">Commit Order</button>
+                    <!-- Totals Section -->
+                    <div class="totals">
+                    <div>Subtotal: $<span id="subtotal">100.00</span></div>
+                    <div>Tax (7%): $<span id="tax">7.00</span></div>
+                    <div>Total: $<span id="total">107.00</span></div>
+                    </div>
+                    </div>
+                    <!-- Customer Modal -->
+                    <div class="modal" id="customerModal">
+                    <div class="modal-content">
+                    <h2>Add Customer</h2>
+                    <input type="text" id="customerName" placeholder="Customer Name" />
+                    <button onclick="addCustomer()">Add Customer</button>
+                    <button onclick="closeModal('customerModal')">Cancel</button>
+                    </div>
+                    </div>
+                    <!-- Employee Modal -->
+                    <div class="modal" id="employeeModal">
+                    <div class="modal-content">
+                    <h2>Add Employee</h2>
+                    <input type="text" id="employeeName" placeholder="Employee Name" />
+                    <button onclick="addEmployee()">Add Employee</button>
+                    <button onclick="closeModal('employeeModal')">Cancel</button>
+                    </div>
+                    </div>
+                    </div>
+                    <script>
+                    let itemCount = 1;
+                    let taxRate = 0.07;
+                    // Open modal
+                    function openModal(modalId) {
+                    document.getElementById(modalId).style.display = "flex";
+                    }
+                    // Close modal
+                    function closeModal(modalId) {
+                    document.getElementById(modalId).style.display = "none";
+                    }
+                    // Add a new item function
+                    function addItem() {
+                    itemCount++;
+                    const itemsContainer = document.getElementById("itemsContainer");
+                    const itemDiv = document.createElement("div");
+                    itemDiv.className = "item";
+                    itemDiv.id = "item" + itemCount;
+                    itemDiv.innerHTML = <span>Item #${itemCount}</span> <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" /> <button onclick="removeItem('item${itemCount}')">Remove</button> ;
+                    itemsContainer.appendChild(itemDiv);
+                    calculateTotals();
+                    }
+                    // Remove item function
+                    function removeItem(itemId) {
+                    const item = document.getElementById(itemId);
+                    item.remove();
+                    calculateTotals();
+                    }
+                    // Calculate totals
+                    function calculateTotals() {
+                    const prices = document.querySelectorAll('.item-price');
+                    let subtotal = 0;
+                    prices.forEach(price => {
+                    subtotal += parseFloat(price.value) || 0;
+                    });
+                    const tax = subtotal taxRate;
+                    const total = subtotal + tax;
+                    document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+                    document.getElementById("tax").textContent = tax.toFixed(2);
+                    document.getElementById("total").textContent = total.toFixed(2);
+                    }
+                    // Commit order function
+                    function commitOrder() {
+                    alert("Order committed successfully!");
+                    // Reset the order form for a new order
+                    document.getElementById("itemsContainer").innerHTML = '';
+                    addItem(); // Add a new item to start a new order
+                    calculateTotals();
+                    }
+                    // Add customer and display
+                    function addCustomer() {
+                    const customerName = document.getElementById("customerName").value;
+                    if (customerName) {
+                    alert(Customer ${customerName} added successfully!);
+                    closeModal('customerModal');
+                    } else {
+                    alert("Please enter a customer name.");
+                    }
+                    }
+                    // Add employee and display
+                    function addEmployee() {
+                    const employeeName = document.getElementById("employeeName").value;
+                    if (employeeName) {
+                    alert(Employee ${employeeName} added successfully!);
+                    closeModal('employeeModal');
+                    } else {
+                    alert("Please enter an employee name.");
+                    }
+                    }
+                    </script>
+                    </body>
+                    </html>
