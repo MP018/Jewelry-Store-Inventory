@@ -5,7 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Receipts</title>
     <style>
-     
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background-color: #eae3d2;
+            position: fixed;
+            top: 50px;
+            left: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sidebar button {
+            background-color: #000;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .sidebar button:hover {
+            background-color: #57574f;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 80px 25px 25px 25px;
+            background-color: #f5f5dc;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .logout-btn {
+            background-color: #000;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
         .container {
             width: 80%;
             margin: auto;
@@ -20,13 +98,17 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .header button, .add-item-btn {
+        .header button, .add-item-btn, .commit-order-btn {
             background-color: #4CAF50;
             color: white;
             border: none;
             padding: 15px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .header button:hover, .add-item-btn:hover, .commit-order-btn:hover {
+            background-color: #45a049;
         }
         .item {
             display: flex;
@@ -36,6 +118,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             margin-bottom: 10px;
+            background-color: #fff;
         }
         .totals div {
             font-size: 18px;
@@ -60,37 +143,19 @@
         }
         .modal-content input, .modal-content button {
             margin-top: 10px;
-        }
-        
-        .container {
-            margin-left: 220px;
-            padding: 25px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        form {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-        input, select, textarea {
-            padding: 10px;
-            margin: 5px 0;
-            width: 48%;
-        }
-        button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            border-radius: 5px;
+        }
+        .modal-content button {
+            background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
-            margin-top: 10px;
+            transition: background-color 0.3s;
         }
-        button.remove {
-            background-color: #dc3545;
+        .modal-content button:hover {
+            background-color: #45a049;
         }
         table {
             width: 100%;
@@ -108,100 +173,15 @@
             background-color: #007bff;
             color: white;
         }
-        img {
-            width: 100px;
-            height: auto;
-        }
-        #filter {
-            margin-top: 20px;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .navbar h1 {
-            font-size: 24px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
-        .sidebar {
-            width: 200px;
-            height: 100vh;
-            background-color: #eae3d2;
-            position: fixed;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 15px;
-            transition: background-color 0.3s;
-        }
-        .sidebar a:hover {
-            background-color: #ccc;
-        }
-        
-        .logout-btn {
-            background-color: #000;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .logout-btn:hover {
-            background-color: #57574f;
-        }
-        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
-            background-color: #000;
-            color: white;
-            padding: 18px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
-        }
-        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
-            background-color: #57574f;
-        }
-
-        
     </style>
 </head>
 <body>
+    <!-- Navbar and Sidebar -->
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="logout.html"><button class="logout-btn">Logout</button></a>
+        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
     </div>
-
+    
     <div class="sidebar">
         <a href="{{ url_for('dashboard') }}"><button class="profile-btn">Dashboard</button></a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
@@ -211,128 +191,196 @@
         <a href="{{ url_for('orders_receipts') }}"><button class="orders-receipts">Orders Receipts</button></a>
     </div>
 
-<div class="container">
-    <!-- Header for adding customers and employees -->
-    <div class="header">
-        <button onclick="openModal('customerModal')">+ Add Customer</button>
-        <h1>Order #: <span id="orderNumber">001</span></h1>
-        <button onclick="openModal('employeeModal')">+ Add Employee</button>
-    </div>
+    <div class="content">
+        <div class="container">
+            <!-- Header for adding customers and employees -->
+            <div class="header">
+                <button onclick="openModal('customerModal')">+ Add Customer</button>
+                <h1>Order #: <span id="orderNumber">{{ next_order_number }}</span></h1>
+                <button onclick="openModal('employeeModal')">+ Add Employee</button>
+            </div>
 
-    <!-- Items Section -->
-    <div id="itemsContainer">
-        <div class="item" id="item1">
-            <span>Item #1</span>
-            <input type="number" value="100.00" step="0.01" class="item-price" onchange="calculateTotals()" />
-            <button onclick="removeItem('item1')">Remove</button>
+            <!-- Items Section -->
+            <div id="itemsContainer">
+                <div class="item" id="item1">
+                    <span>Item #1</span>
+                    <input type="number" value="100.00" step="0.01" class="item-price" onchange="calculateTotals()" />
+                    <button onclick="removeItem('item1')">Remove</button>
+                </div>
+            </div>
+            <!-- Add Item Button -->
+            <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+            <!-- Commit Order Button -->
+            <button class="commit-order-btn" onclick="commitOrder()">Commit Order</button>
+            <!-- Totals Section -->
+            <div class="totals">
+                <div>Subtotal: $<span id="subtotal">100.00</span></div>
+                <div>Tax (7%): $<span id="tax">7.00</span></div>
+                <div>Total: $<span id="total">107.00</span></div>
+            </div>
         </div>
+        <!-- Customer Modal -->
+        <div class="modal" id="customerModal">
+            <div class="modal-content">
+                <h2>Add Customer</h2>
+                <input type="text" id="customerName" placeholder="Customer Name" />
+                <button onclick="addCustomer()">Add Customer</button>
+                <button onclick="closeModal('customerModal')">Cancel</button>
+            </div>
+        </div>
+        <!-- Employee Modal -->
+        <div class="modal" id="employeeModal">
+            <div class="modal-content">
+                <h2>Add Employee</h2>
+                <input type="text" id="employeeName" placeholder="Employee Name" />
+                <button onclick="addEmployee()">Add Employee</button>
+                <button onclick="closeModal('employeeModal')">Cancel</button>
+            </div>
+        </div>
+        <!-- Orders Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Order Number</th>
+                    <th>Customer</th>
+                    <th>Employee</th>
+                    <th>Subtotal</th>
+                    <th>Tax</th>
+                    <th>Total</th>
+                    <th>Sold Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.Order_Number }}</td>
+                    <td>{{ order.customer_first_name }} {{ order.customer_last_name }}</td>
+                    <td>{{ order.employee_first_name }} {{ order.employee_last_name }}</td>
+                    <td>{{ order.Subtotal }}</td>
+                    <td>{{ order.Tax }}</td>
+                    <td>{{ order.Total }}</td>
+                    <td>{{ order.Sold_Date }}</td>
+                    <td><button onclick="removeOrder('{{ order.Order_Number }}')">Remove</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-
-    <!-- Add Item Button -->
-    <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
-
-    <!-- Totals Section -->
-    <div class="totals">
-        <div>Subtotal: $<span id="subtotal">100.00</span></div>
-        <div>Tax (7%): $<span id="tax">7.00</span></div>
-        <div>Total: $<span id="total">107.00</span></div>
-    </div>
-</div>
-
-<!-- Customer Modal -->
-<div class="modal" id="customerModal">
-    <div class="modal-content">
-        <h2>Add Customer</h2>
-        <input type="text" id="customerName" placeholder="Customer Name" />
-        <button onclick="addCustomer()">Add Customer</button>
-        <button onclick="closeModal('customerModal')">Cancel</button>
-    </div>
-</div>
-
-<!-- Employee Modal -->
-<div class="modal" id="employeeModal">
-    <div class="modal-content">
-        <h2>Add Employee</h2>
-        <input type="text" id="employeeName" placeholder="Employee Name" />
-        <button onclick="addEmployee()">Add Employee</button>
-        <button onclick="closeModal('employeeModal')">Cancel</button>
-    </div>
-</div>
-
-<script>
-    let itemCount = 1;
-    let taxRate = 0.07;
-
-    // Open modal
-    function openModal(modalId) {
-        document.getElementById(modalId).style.display = "flex";
-    }
-
-    // Close modal
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = "none";
-    }
-
-    // Add a new item function
-    function addItem() {
-        itemCount++;
-        const itemsContainer = document.getElementById("itemsContainer");
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "item";
-        itemDiv.id = "item" + itemCount;
-        itemDiv.innerHTML = `
-            <span>Item #${itemCount}</span>
-            <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" />
-            <button onclick="removeItem('item${itemCount}')">Remove</button>
-        `;
-        itemsContainer.appendChild(itemDiv);
-        calculateTotals();
-    }
-
-    // Remove item function
-    function removeItem(itemId) {
-        const item = document.getElementById(itemId);
-        item.remove();
-        calculateTotals();
-    }
-
-    // Calculate totals
-    function calculateTotals() {
-        const prices = document.querySelectorAll('.item-price');
-        let subtotal = 0;
-        prices.forEach(price => {
-            subtotal += parseFloat(price.value) || 0;
-        });
-        const tax = subtotal * taxRate;
-        const total = subtotal + tax;
-
-        document.getElementById("subtotal").textContent = subtotal.toFixed(2);
-        document.getElementById("tax").textContent = tax.toFixed(2);
-        document.getElementById("total").textContent = total.toFixed(2);
-    }
-
-    // Add customer and display
-    function addCustomer() {
-        const customerName = document.getElementById("customerName").value;
-        if (customerName) {
-            alert(`Customer ${customerName} added successfully!`);
-            closeModal('customerModal');
-        } else {
-            alert("Please enter a customer name.");
+    <script>
+        let itemCount = 1;
+        let taxRate = 0.07;
+        // Open modal
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "flex";
         }
-    }
-
-    // Add employee and display
-    function addEmployee() {
-        const employeeName = document.getElementById("employeeName").value;
-        if (employeeName) {
-            alert(`Employee ${employeeName} added successfully!`);
-            closeModal('employeeModal');
-        } else {
-            alert("Please enter an employee name.");
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
         }
-    }
-</script>
-
+        // Add a new item function
+        function addItem() {
+            itemCount++;
+            const itemsContainer = document.getElementById("itemsContainer");
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item";
+            itemDiv.id = "item" + itemCount;
+            itemDiv.innerHTML = `<span>Item #${itemCount}</span> <input type="number" value="0.00" step="0.01" class="item-price" onchange="calculateTotals()" /> <button onclick="removeItem('item${itemCount}')">Remove</button>`;
+            itemsContainer.appendChild(itemDiv);
+            calculateTotals();
+        }
+        // Remove item function
+        function removeItem(itemId) {
+            const item = document.getElementById(itemId);
+            item.remove();
+            calculateTotals();
+        }
+        // Calculate totals
+        function calculateTotals() {
+            const prices = document.querySelectorAll('.item-price');
+            let subtotal = 0;
+            prices.forEach(price => {
+                subtotal += parseFloat(price.value) || 0;
+            });
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
+            document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+            document.getElementById("tax").textContent = tax.toFixed(2);
+            document.getElementById("total").textContent = total.toFixed(2);
+        }
+        // Commit order function
+        function commitOrder() {
+            const order = {
+                customer_id: 1, // Replace with actual customer ID
+                employee_id: 1, // Replace with actual employee ID
+                subtotal: parseFloat(document.getElementById("subtotal").textContent),
+                tax: parseFloat(document.getElementById("tax").textContent),
+                total: parseFloat(document.getElementById("total").textContent)
+            };
+            fetch('{{ url_for("orders_receipts") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'save_order', order: order })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Order committed successfully!");
+                    location.reload(); // Reload the page to update the orders list
+                } else {
+                    alert("Error committing order: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error committing order: " + error);
+            });
+        }
+        // Remove order function
+        function removeOrder(orderNumber) {
+            fetch('{{ url_for("orders_receipts") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'delete_order', order_number: orderNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Order removed successfully!");
+                    location.reload(); // Reload the page to update the orders list
+                } else {
+                    alert("Error removing order: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error removing order: " + error);
+            });
+        }
+        // Add customer and display
+        function addCustomer() {
+            const customerName = document.getElementById("customerName").value;
+            if (customerName) {
+                alert(`Customer ${customerName} added successfully!`);
+                closeModal('customerModal');
+            } else {
+                alert("Please enter a customer name.");
+            }
+        }
+        // Add employee and display
+        function addEmployee() {
+            const employeeName = document.getElementById("employeeName").value;
+            if (employeeName) {
+                alert(`Employee ${employeeName} added successfully!`);
+                closeModal('employeeModal');
+            } else {
+                alert("Please enter an employee name.");
+            }
+        }
+    </script>
 </body>
 </html>
