@@ -332,9 +332,21 @@
 
     // Function to remove an item
     function removeItem(itemId) {
-        // Filter out the item with the matching ID
-        repairItems = repairItems.filter(item => item.id !== itemId);
-        displayRepairItems(); // Refresh the displayed items
+        if (confirm('Are you sure you want to remove this item?')) {
+            fetch(`/remove_repair_item/${itemId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Repair item removed successfully!');
+                    location.reload(); // Refresh the page to see the updated list
+                } else {
+                    alert('Error removing item: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
     }
 
         document.getElementById('filter').addEventListener('input', function () {
