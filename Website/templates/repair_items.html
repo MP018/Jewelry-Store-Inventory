@@ -244,20 +244,22 @@
         </table>
     </div>
 
-    <!-- Add an Edit Modal -->
+    <!-- Update the Edit Modal section -->
     <div class="modal" id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-        <div class="modal-content" style="background-color: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px;">
+        <div class="modal-content" style="background-color: #f5f5dc; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px;">
             <h2>Edit Repair Item</h2>
             <form id="edit-form">
-                <input type="hidden" id="edit-item-id">
-                <input type="text" id="edit-item-name" placeholder="Jewelry Name" required>
-                <input type="text" id="edit-item-condition" placeholder="Condition" required>
-                <input type="date" id="edit-repair-date" required>
-                <input type="number" id="edit-repair-cost" placeholder="Estimated Repair Cost ($)" required>
-                <input type="text" id="edit-employee-id" placeholder="Employee ID" required> <!-- New Employee ID field -->
-                <input type="text" id="edit-customer-id" placeholder="Customer ID" required> <!-- New Customer ID field -->
-                <textarea id="edit-repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
-                <input type="file" id="edit-item-image" accept="image/*">
+                <input type="hidden" id="edit-repair-order-number" name="repair_order_number">
+                <input type="text" id="edit-item-name" name="item_name" placeholder="Jewelry Name" required>
+                <input type="text" id="edit-description" name="description" placeholder="Description" required>
+                <input type="date" id="edit-repair-date" name="repair_date" required>
+                <input type="number" id="edit-subtotal" name="subtotal" placeholder="Subtotal" step="0.01" required>
+                <input type="number" id="edit-tax" name="tax" placeholder="Tax" step="0.01" required>
+                <input type="number" id="edit-total" name="total" placeholder="Total" step="0.01" required>
+                <input type="text" id="edit-employee-id" name="employee_id" placeholder="Employee ID" required>
+                <input type="text" id="edit-customer-id" name="customer_id" placeholder="Customer ID" required>
+                <textarea id="edit-repair-notes" name="repair_notes" placeholder="Repair Notes" style="width:100%;"></textarea>
+                <input type="file" id="edit-image" name="image" accept="image/*">
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button type="submit" style="background-color: #4CAF50;">Save Changes</button>
                     <button type="button" onclick="closeEditModal()" style="background-color: #f44336;">Cancel</button>
@@ -354,58 +356,58 @@
             displayRepairItems(filterValue);
         });
 
-        // Add these new functions for edit functionality
-        function editItem(itemId) {
-            const item = repairItems.find(item => item.id === itemId);
-            if (item) {
-                // Populate the edit form with current values
-                document.getElementById('edit-item-id').value = item.id;
-                document.getElementById('edit-item-name').value = item.name;
-                document.getElementById('edit-item-condition').value = item.condition;
-                document.getElementById('edit-repair-date').value = item.date;
-                document.getElementById('edit-repair-cost').value = item.cost;
-                document.getElementById('edit-employee-id').value = item.employeeId; // Populate Employee ID
-                document.getElementById('edit-customer-id').value = item.customerId; // Populate Customer ID
-                document.getElementById('edit-repair-notes').value = item.notes;
-                
-                // Show the edit modal
-                document.getElementById('editModal').style.display = 'flex';
-            }
+        // Update the editItem function
+        function editItem(repairOrderNumber) {
+            fetch(`/repair_items/${repairOrderNumber}`)
+                .then(response => response.json())
+                .then(item => {
+                    // Populate the edit form with current values
+                    document.getElementById('edit-repair-order-number').value = item.Repair_Order_Number;
+                    document.getElementById('edit-item-name').value = item.Item_Name;
+                    document.getElementById('edit-description').value = item.Description;
+                    document.getElementById('edit-repair-date').value = item.Repair_Date;
+                    document.getElementById('edit-subtotal').value = item.Subtotal;
+                    document.getElementById('edit-tax').value = item.Tax;
+                    document.getElementById('edit-total').value = item.Total;
+                    document.getElementById('edit-employee-id').value = item.Employee_ID;
+                    document.getElementById('edit-customer-id').value = item.Customer_ID;
+                    document.getElementById('edit-repair-notes').value = item.Repair_Notes;
+                    
+                    // Show the edit modal
+                    const modal = document.getElementById('editModal');
+                    modal.style.display = 'flex';
+                })
+                .catch(error => console.error('Error:', error));
         }
+
+        // Update the edit form submission handler
+        document.getElementById('edit-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            const repairOrderNumber = document.getElementById('edit-repair-order-number').value;
+            
+            fetch(`/repair_items/${repairOrderNumber}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Repair item updated successfully!');
+                    location.reload(); // Refresh the page to see the updates
+                } else {
+                    alert('Error updating repair item: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
 
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
         }
 
-        // Add event listener for edit form submission
-        document.getElementById('edit-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const itemId = document.getElementById('edit-item-id').value;
-            const itemIndex = repairItems.findIndex(item => item.id === itemId);
-            
-            if (itemIndex !== -1) {
-                const updatedItem = {
-                    id: itemId,
-                    name: document.getElementById('edit-item-name').value,
-                    condition: document.getElementById('edit-item-condition').value,
-                    date: document.getElementById('edit-repair-date').value,
-                    cost: document.getElementById('edit-repair-cost').value,
-                    employeeId: document.getElementById('edit-employee-id').value, // Update Employee ID
-                    customerId: document.getElementById('edit-customer-id').value, // Update Customer ID
-                    notes: document.getElementById('edit-repair-notes').value,
-                    image: document.getElementById('edit-item-image').files[0] 
-                        ? URL.createObjectURL(document.getElementById('edit-item-image').files[0])
-                        : repairItems[itemIndex].image
-                };
-                
-                repairItems[itemIndex] = updatedItem;
-                displayRepairItems();
-                closeEditModal();
-            }
-        });
-
-        // Add window click event to close modal when clicking outside
+        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('editModal');
             if (event.target === modal) {

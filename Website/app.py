@@ -631,6 +631,86 @@ def debug_images():
     
     return {'images': images}
 
+@app.route('/repair_items/<repair_order_number>', methods=['GET'])
+def get_repair_item(repair_order_number):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+        
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('''
+            SELECT * FROM REPAIR_ORDER 
+            WHERE Repair_Order_Number = %s
+        ''', (repair_order_number,))
+        item = cursor.fetchone()
+        cursor.close()
+        
+        if item:
+            # Convert date to string format for JSON
+            item['Repair_Date'] = item['Repair_Date'].strftime('%Y-%m-%d')
+            return jsonify(item)
+        return jsonify({'error': 'Item not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/repair_items/<repair_order_number>', methods=['POST'])
+def update_repair_item(repair_order_number):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+        
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Handle image upload
+        filename = None
+        if 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename:
+                filename = save_image(image)
+        
+        # Update the repair order
+        update_query = '''
+            UPDATE REPAIR_ORDER 
+            SET Item_Name = %s,
+                Description = %s,
+                Employee_ID = %s,
+                Customer_ID = %s,
+                Subtotal = %s,
+                Tax = %s,
+                Total = %s,
+                Repair_Date = %s,
+                Repair_Notes = %s
+        '''
+        params = [
+            request.form['item_name'],
+            request.form['description'],
+            request.form['employee_id'],
+            request.form['customer_id'],
+            request.form['subtotal'],
+            request.form['tax'],
+            request.form['total'],
+            request.form['repair_date'],
+            request.form['repair_notes']
+        ]
+        
+        # Add image to update if a new one was uploaded
+        if filename:
+            update_query += ', Image = %s'
+            params.append(filename)
+            
+        # Add WHERE clause
+        update_query += ' WHERE Repair_Order_Number = %s'
+        params.append(repair_order_number)
+        
+        cursor.execute(update_query, params)
+        mysql.connection.commit()
+        cursor.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        mysql.connection.rollback()
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     try:
         print("\nStarting JewelryNest Application...")
