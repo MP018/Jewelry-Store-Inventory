@@ -152,6 +152,7 @@ def login():
 # Dashboard page
 @app.route('/dashboard')
 def dashboard():
+    print("Dashboard route accessed")  # Debug print
     if 'loggedin' in session:
         return render_template('dashboard.html', 
                                first_name=session['First_Name'], 
@@ -292,13 +293,13 @@ def inventory():
                     print(f"Saved image filename: {filename}")
             
             # Insert into ITEM table
-            cursor.execute('''
+            cursor.execute(''' 
                 INSERT INTO ITEM (SKU, Name, Price, Quantity, Picture, Sold)
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (sku, name, price, quantity, filename, 0))
             
             # Insert into ITEM_TAGS table
-            cursor.execute('''
+            cursor.execute(''' 
                 INSERT INTO ITEM_TAGS (SKU, Material, Gemstone, Weight, Description)
                 VALUES (%s, %s, %s, %s, %s)
             ''', (sku, material, gemstone, weight, description))
@@ -317,7 +318,7 @@ def inventory():
     
     # GET request handling
     try:
-        cursor.execute('''
+        cursor.execute(''' 
             SELECT i.*, 
                    t.Material,
                    t.Gemstone,
@@ -422,11 +423,13 @@ def registration():
     # Registration logic here
     return render_template('registration.html')
 
-
+# Repair Items route
 @app.route('/repair_items', methods=['GET', 'POST'])
 def repair_items():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     if request.method == 'POST':
         try:
@@ -436,53 +439,46 @@ def repair_items():
             description = request.form['description']
             repair_date = request.form['repair_date']
             repair_notes = request.form['repair_notes']
-            customer_id = request.form['customer_id']
-            employee_id = request.form['employee_id']
+            customer_id = request.form['customer_id']  # New field
+            employee_id = request.form['employee_id']  # New field
             subtotal = request.form['subtotal']
             tax = request.form['tax']
             total = request.form['total']
 
-            cursor = mysql.connection.cursor()
-            
             # Handle image upload
+            filename = None
             if 'image' in request.files:
                 image = request.files['image']
                 if image and image.filename:
                     filename = save_image(image)
-                    # Store only filename in database
-                    cursor.execute(
-                        'INSERT INTO REPAIR_ORDER (Repair_order_Number, Item_Name, Description, Employee_ID, Customer_ID, Image, Subtotal, Total, Tax, Repair_Date, Repair_Notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                        (repair_order_number, item_name, description, employee_id,  customer_id, filename, subtotal, tax, total, repair_date, repair_notes)
-                    )
-            else:
-                # No image provided
-                cursor.execute(
-                    'INSERT INTO REPAIR_ORDER (Repair_order_Number, Item_Name, Description, Employee_ID, Customer_ID, Subtotal, Total, Tax, Repair_Date, Repair_Notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                    (repair_order_number, item_name, description, employee_id,  customer_id, subtotal, tax, total, repair_date, repair_notes)
-                )
-                
-            
+
+            # Insert into REPAIR_ORDER table
+            cursor.execute(
+                'INSERT INTO REPAIR_ORDER (Repair_Order_Number, Item_Name, Description, Employee_ID, Customer_ID, Image, Subtotal, Tax, Total, Repair_Date, Repair_Notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                (repair_order_number, item_name, description, employee_id, customer_id, filename, subtotal, tax, total, repair_date, repair_notes)
+            )
             mysql.connection.commit()
-            cursor.close()
-            
-            return jsonify({'success': True}), 200
-            
+            return jsonify({'success': True})  # Return success response
         except Exception as e:
-            print(f"Error: {str(e)}")  # For debugging
-            return jsonify({'error': str(e)}), 500
-            
+            mysql.connection.rollback()
+            print(f"Error adding repair order: {e}")
+            return jsonify({'success': False, 'error': str(e)})  # Return error response
+
     # GET request - fetch existing repair orders
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM REPAIR_ORDER')
-    repair_items = cursor.fetchall()
-    
-    # Process images for display
-    for item in repair_items:
-        if item['Image']:
-            item['Image'] = url_for('static', filename=f"images/{item['Image']}")
-    
-    cursor.close()
-    return render_template('repair_items.html', repair_items=repair_items)
+    try:
+        cursor.execute('SELECT Repair_Order_Number, Item_Name, Description, Employee_ID, Customer_ID, Image, Subtotal, Tax, Total, Repair_Date, Repair_Notes FROM REPAIR_ORDER')
+        repair_items = cursor.fetchall()
+        
+        # Process images for display
+        for item in repair_items:
+            if item['Image']:
+                item['Image'] = url_for('static', filename=f"images/{item['Image']}")
+        
+        cursor.close()
+        return render_template('repair_items.html', repair_items=repair_items)
+    except Exception as e:
+        print(f"Error fetching repair items: {e}")
+        return str(e), 500
 
 @app.route('/remove_repair_item/<repair_order_number>', methods=['POST'])
 def remove_repair_item(repair_order_number):
@@ -543,7 +539,7 @@ def orders_receipts():
                 total = order.get('total')
 
                 # Insert the new order into the database
-                cursor.execute("""
+                cursor.execute(""" 
                     INSERT INTO ORDERS (Customer_ID, Employee_ID, Subtotal, Tax, Total, Sold_Date)
                     VALUES (%s, %s, %s, %s, %s, NOW())
                 """, (customer_id, employee_id, subtotal, tax, total))

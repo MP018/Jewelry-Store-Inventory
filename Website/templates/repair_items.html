@@ -18,10 +18,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
@@ -42,26 +38,48 @@
             height: 100vh;
             background-color: #eae3d2;
             position: fixed;
-            top: 50px;
-            left: 0;
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
-        .sidebar button {
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        
+        .logout-btn {
             background-color: #000;
             color: white;
-            padding: 15px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
             text-align: center;
+            margin-bottom: 10px;
             transition: background-color 0.3s;
         }
-        .sidebar button:hover {
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
         .content {
@@ -105,7 +123,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #28a745; /* This can be changed if needed */
             color: white;
             border: none;
             cursor: pointer;
@@ -142,12 +160,11 @@
 
 <body>
     <!-- Navbar and Sidebar -->
-<body>
     <div class="navbar">
         <h1>JewelryNest Dashboard</h1>
-        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+        <a href="logout.html"><button class="logout-btn">Logout</button></a>
     </div>
-    
+
     <div class="sidebar">
         <a href="{{ url_for('dashboard') }}"><button class="profile-btn">Dashboard</button></a>
         <a href="{{ url_for('customer_profile') }}"><button class="profile-btn">Customer Profile</button></a>
@@ -158,18 +175,21 @@
     </div>
 
     <div class="container">
-        <br>
         <h1>Manage Repair Items</h1>
         
         <!-- Form for adding a new repair item -->
         <form id="repair-form">
-            <input type="text" id="item-id" placeholder="Repair Item ID" required>
-            <input type="text" id="item-name" placeholder="Jewelry Name" required>
-            <input type="text" id="item-condition" placeholder="Condition (e.g., Broken, Scratched)" required>
-            <input type="date" id="repair-date" placeholder="Repair Date" required>
-            <input type="number" id="repair-cost" placeholder="Estimated Repair Cost ($)" required>
-            <textarea id="repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
-            <input type="file" id="item-image" accept="image/*" required>
+            <input type="text" name="repair_order_number" placeholder="Repair Order Number" required>
+            <input type="text" name="item_name" placeholder="Jewelry Name" required>
+            <input type="text" name="description" placeholder="Description" required>
+            <input type="date" name="repair_date" required>
+            <input type="number" name="subtotal" placeholder="Subtotal" required>
+            <input type="number" name="tax" placeholder="Tax" required>
+            <input type="number" name="total" placeholder="Total" required>
+            <input type="text" name="employee_id" placeholder="Employee ID" required>
+            <input type="text" name="customer_id" placeholder="Customer ID" required>
+            <textarea name="repair_notes" placeholder="Repair Notes" style="width:100%;"></textarea>
+            <input type="file" name="image" accept="image/*" required>
             <button type="submit">Add Repair Item</button>
         </form>
 
@@ -183,9 +203,13 @@
                     <th>Repair Item ID</th>
                     <th>Name</th>
                     <th>Condition</th>
+                    <th>Employee ID</th>
+                    <th>Customer ID</th>
+                    <th>Subtotal</th>
+                    <th>Tax</th>
+                    <th>Total</th>
                     <th>Repair Date</th>
-                    <th>Repair Cost ($)</th>
-                    <th>Notes</th>
+                    <th>Repair Notes</th>
                     <th>Image</th>
                     <th>Actions</th>
                 </tr>
@@ -196,19 +220,24 @@
                     <td>{{ item.Repair_Order_Number }}</td>
                     <td>{{ item.Item_Name }}</td>
                     <td>{{ item.Description }}</td>
+                    <td>{{ item.Employee_ID }}</td>
+                    <td>{{ item.Customer_ID }}</td>
+                    <td>${{ item.Subtotal }}</td>
+                    <td>${{ item.Tax }}</td>
+                    <td>${{ item.Total }}</td>
                     <td>{{ item.Repair_Date }}</td>
-                    <td>{{ item.Subtotal }}</td>
-                    <td>{{ item.Tax }}</td>
-                    <td>{{ item.Total }}</td>
                     <td>{{ item.Repair_Notes }}</td>
                     <td>
                         {% if item.Image %}
-                        <img src="{{ item.Image }}" alt="{{ item.Item_Name }} Image">
+                        <img src="{{ item.Image }}" alt="{{ item.Item_Name }} Image" style="width: 100px; height: auto;">
                         {% else %}
                         No Image
                         {% endif %}
                     </td>
-                    <td><button class="remove" onclick="removeItem('{{ item.Repair_Order_Number }}')">Remove</button></td>
+                    <td>
+                        <button class="edit" onclick="editItem('{{ item.Repair_Order_Number }}')">Edit</button>
+                        <button class="remove" onclick="removeItem('{{ item.Repair_Order_Number }}')">Remove</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -225,6 +254,8 @@
                 <input type="text" id="edit-item-condition" placeholder="Condition" required>
                 <input type="date" id="edit-repair-date" required>
                 <input type="number" id="edit-repair-cost" placeholder="Estimated Repair Cost ($)" required>
+                <input type="text" id="edit-employee-id" placeholder="Employee ID" required> <!-- New Employee ID field -->
+                <input type="text" id="edit-customer-id" placeholder="Customer ID" required> <!-- New Customer ID field -->
                 <textarea id="edit-repair-notes" placeholder="Repair Notes" style="width:100%;"></textarea>
                 <input type="file" id="edit-item-image" accept="image/*">
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -246,6 +277,8 @@
             const itemCondition = document.getElementById('item-condition').value;
             const repairDate = document.getElementById('repair-date').value;
             const repairCost = document.getElementById('repair-cost').value;
+            const employeeId = document.getElementById('employee-id').value; // New Employee ID
+            const customerId = document.getElementById('customer-id').value; // New Customer ID
             const repairNotes = document.getElementById('repair-notes').value;
             const itemImage = document.getElementById('item-image').files[0];
             
@@ -256,6 +289,8 @@
                 condition: itemCondition,
                 date: repairDate,
                 cost: repairCost,
+                employeeId: employeeId, // Include Employee ID
+                customerId: customerId, // Include Customer ID
                 notes: repairNotes,
                 image: URL.createObjectURL(itemImage)
             };
@@ -265,38 +300,42 @@
             this.reset();  // Reset form after submission
         });
 
-        function displayRepairItems(filterValue = '') {
-            const tbody = document.querySelector('#repair-table tbody');
-            tbody.innerHTML = '';
+        // Function to display repair items
+    function displayRepairItems(filterValue = '') {
+        const tbody = document.querySelector('#repair-table tbody');
+        tbody.innerHTML = '';
 
-            repairItems
-                .filter(item => {
-                    const searchableString = Object.values(item).join(' ').toLowerCase();
-                    return searchableString.includes(filterValue.toLowerCase());
-                })
-                .forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.condition}</td>
-                        <td>${item.date}</td>
-                        <td>$${item.cost}</td>
-                        <td>${item.notes}</td>
-                        <td><img src="${item.image}" alt="${item.name} Image"></td>
-                        <td>
-                            <button class="edit" onclick="editItem('${item.id}')" style="background-color: #4CAF50; margin-bottom: 5px;">Edit</button>
-                            <button class="remove" onclick="removeItem('${item.id}')" style="background-color: #f44336;">Remove</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-        }
+        repairItems
+            .filter(item => {
+                const searchableString = Object.values(item).join(' ').toLowerCase();
+                return searchableString.includes(filterValue.toLowerCase());
+            })
+            .forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.condition}</td>
+                    <td>${item.employeeId}</td>
+                    <td>${item.customerId}</td>
+                    <td>$${item.cost}</td>
+                    <td>${item.notes}</td>
+                    <td><img src="${item.image}" alt="${item.name} Image"></td>
+                    <td>
+                        <button class="edit" onclick="editItem('${item.id}')" style="background-color: #4CAF50; margin-bottom: 5px;">Edit</button>
+                        <button class="remove" onclick="removeItem('${item.id}')" style="background-color: #f44336;">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+    }
 
-        function removeItem(itemId) {
-            repairItems = repairItems.filter(item => item.id !== itemId);
-            displayRepairItems();
-        }
+    // Function to remove an item
+    function removeItem(itemId) {
+        // Filter out the item with the matching ID
+        repairItems = repairItems.filter(item => item.id !== itemId);
+        displayRepairItems(); // Refresh the displayed items
+    }
 
         document.getElementById('filter').addEventListener('input', function () {
             const filterValue = this.value;
@@ -313,6 +352,8 @@
                 document.getElementById('edit-item-condition').value = item.condition;
                 document.getElementById('edit-repair-date').value = item.date;
                 document.getElementById('edit-repair-cost').value = item.cost;
+                document.getElementById('edit-employee-id').value = item.employeeId; // Populate Employee ID
+                document.getElementById('edit-customer-id').value = item.customerId; // Populate Customer ID
                 document.getElementById('edit-repair-notes').value = item.notes;
                 
                 // Show the edit modal
@@ -338,6 +379,8 @@
                     condition: document.getElementById('edit-item-condition').value,
                     date: document.getElementById('edit-repair-date').value,
                     cost: document.getElementById('edit-repair-cost').value,
+                    employeeId: document.getElementById('edit-employee-id').value, // Update Employee ID
+                    customerId: document.getElementById('edit-customer-id').value, // Update Customer ID
                     notes: document.getElementById('edit-repair-notes').value,
                     image: document.getElementById('edit-item-image').files[0] 
                         ? URL.createObjectURL(document.getElementById('edit-item-image').files[0])
@@ -357,6 +400,28 @@
                 closeEditModal();
             }
         }
+
+        document.getElementById('repair-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(this); // Create FormData object from the form
+
+            fetch('/repair_items', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Repair order added successfully!');
+                    // Optionally, refresh the page or update the UI
+                    location.reload(); // Reload the page to see the new item
+                } else {
+                    alert('Error adding repair order: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
     </script>
 </body>
 </html>
