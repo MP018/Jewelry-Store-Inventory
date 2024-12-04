@@ -18,10 +18,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .navbar h1 {
@@ -42,26 +38,48 @@
             height: 100vh;
             background-color: #eae3d2;
             position: fixed;
-            top: 50px;
-            left: 0;
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
-        .sidebar button {
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #ccc;
+        }
+        
+        .logout-btn {
             background-color: #000;
             color: white;
-            padding: 15px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #57574f;
+        }
+        .profile-btn, .inventory-button, .notes-btn, .repair-btn, .orders-receipts {
+            background-color: #000;
+            color: white;
+            padding: 18px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
             text-align: center;
+            margin-bottom: 10px;
             transition: background-color 0.3s;
         }
-        .sidebar button:hover {
+        .profile-btn:hover, .inventory-button:hover, .notes-btn:hover, .repair-btn:hover, .orders-receipts:hover {
             background-color: #57574f;
         }
         .content {
@@ -135,7 +153,7 @@
             align-items: center;
         }
         .modal-content {
-            background-color: white;
+            background-color: #f5f5dc;
             padding: 20px;
             border-radius: 8px;
             width: 300px;
@@ -161,6 +179,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background-color: #f5f5dc;
         }
         table, th, td {
             border: 1px solid #ccc;
@@ -172,6 +191,42 @@
         th {
             background-color: #007bff;
             color: white;
+        }
+        button.remove {
+            background-color: #dc3545; /* Red background for remove button */
+            color: white; /* White text color */
+            padding: 10px 15px; /* Padding for the button */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth background color transition */
+        }
+        button.remove:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+        .cancel-button {
+            background-color: #dc3545; /* Red background */
+            color: white; /* White text */
+            padding: 10px 15px; /* Padding for the button */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth background color transition */
+        }
+        .cancel-button:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+        .remove-button {
+            background-color: #dc3545; /* Red background */
+            color: white; /* White text */
+            padding: 10px 15px; /* Padding for the button */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth background color transition */
+        }
+        .remove-button:hover {
+            background-color: #c82333; /* Darker red on hover */
         }
     </style>
 </head>
@@ -223,18 +278,28 @@
         <div class="modal" id="customerModal">
             <div class="modal-content">
                 <h2>Add Customer</h2>
-                <input type="text" id="customerName" placeholder="Customer Name" />
+                <select id="customerSelect">
+                    <option value="">Select Customer</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.Customer_ID }}">{{ customer.First_Name }} {{ customer.Last_Name }}</option>
+                    {% endfor %}
+                </select>
                 <button onclick="addCustomer()">Add Customer</button>
-                <button onclick="closeModal('customerModal')">Cancel</button>
+                <button style="background-color: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px;" onclick="closeModal('customerModal')">Cancel</button>
             </div>
         </div>
         <!-- Employee Modal -->
         <div class="modal" id="employeeModal">
             <div class="modal-content">
                 <h2>Add Employee</h2>
-                <input type="text" id="employeeName" placeholder="Employee Name" />
+                <select id="employeeSelect">
+                    <option value="">Select Employee</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.Employee_ID }}">{{ employee.First_Name }} {{ employee.Last_Name }}</option>
+                    {% endfor %}
+                </select>
                 <button onclick="addEmployee()">Add Employee</button>
-                <button onclick="closeModal('employeeModal')">Cancel</button>
+                <button style="background-color: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px;" onclick="closeModal('employeeModal')">Cancel</button>
             </div>
         </div>
         <!-- Orders Table -->
@@ -261,7 +326,9 @@
                     <td>{{ order.Tax }}</td>
                     <td>{{ order.Total }}</td>
                     <td>{{ order.Sold_Date }}</td>
-                    <td><button onclick="removeOrder('{{ order.Order_Number }}')">Remove</button></td>
+                    <td>
+                        <button class="remove-button" onclick="removeOrder('{{ order.Order_Number }}')">Remove</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -310,13 +377,20 @@
         }
         // Commit order function
         function commitOrder() {
+            const customerId = document.getElementById("customerSelect").value;
+            const employeeId = document.getElementById("employeeSelect").value;
+            const subtotal = parseFloat(document.getElementById("subtotal").textContent);
+            const tax = parseFloat(document.getElementById("tax").textContent);
+            const total = parseFloat(document.getElementById("total").textContent);
+
             const order = {
-                customer_id: 1, // Replace with actual customer ID
-                employee_id: 1, // Replace with actual employee ID
-                subtotal: parseFloat(document.getElementById("subtotal").textContent),
-                tax: parseFloat(document.getElementById("tax").textContent),
-                total: parseFloat(document.getElementById("total").textContent)
+                customer_id: customerId,
+                employee_id: employeeId,
+                subtotal: subtotal,
+                tax: tax,
+                total: total
             };
+
             fetch('{{ url_for("orders_receipts") }}', {
                 method: 'POST',
                 headers: {
@@ -363,22 +437,24 @@
         }
         // Add customer and display
         function addCustomer() {
-            const customerName = document.getElementById("customerName").value;
-            if (customerName) {
-                alert(`Customer ${customerName} added successfully!`);
+            const customerId = document.getElementById("customerSelect").value;
+            if (customerId) {
+                alert(`Customer with ID ${customerId} added successfully!`);
                 closeModal('customerModal');
+                // You can add additional logic here to handle the selected customer
             } else {
-                alert("Please enter a customer name.");
+                alert("Please select a customer.");
             }
         }
         // Add employee and display
         function addEmployee() {
-            const employeeName = document.getElementById("employeeName").value;
-            if (employeeName) {
-                alert(`Employee ${employeeName} added successfully!`);
+            const employeeId = document.getElementById("employeeSelect").value;
+            if (employeeId) {
+                alert(`Employee with ID ${employeeId} added successfully!`);
                 closeModal('employeeModal');
+                // You can add additional logic here to handle the selected employee
             } else {
-                alert("Please enter an employee name.");
+                alert("Please select an employee.");
             }
         }
     </script>
