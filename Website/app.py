@@ -711,6 +711,55 @@ def update_repair_item(repair_order_number):
         mysql.connection.rollback()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/orders_receipts/<order_number>', methods=['GET'])
+def get_order(order_number):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+        
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('''
+            SELECT * FROM ORDERS 
+            WHERE Order_Number = %s
+        ''', (order_number,))
+        order = cursor.fetchone()
+        cursor.close()
+        
+        if order:
+            return jsonify(order)
+        return jsonify({'error': 'Order not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/orders_receipts/<order_number>', methods=['POST'])
+def update_order(order_number):
+    if 'loggedin' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+        
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        data = request.get_json()
+        order = data.get('order')
+        customer_id = order.get('customer_id')
+        employee_id = order.get('employee_id')
+        subtotal = order.get('subtotal')
+        tax = order.get('tax')
+        total = order.get('total')
+
+        cursor.execute('''
+            UPDATE ORDERS 
+            SET Customer_ID = %s, Employee_ID = %s, Subtotal = %s, Tax = %s, Total = %s
+            WHERE Order_Number = %s
+        ''', (customer_id, employee_id, subtotal, tax, total, order_number))
+        mysql.connection.commit()
+        cursor.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        mysql.connection.rollback()
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     try:
         print("\nStarting JewelryNest Application...")
